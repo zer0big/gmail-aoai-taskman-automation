@@ -1,0 +1,831 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.38.33.27573",
+      "templateHash": "13684688437429387892"
+    }
+  },
+  "parameters": {
+    "namePrefix": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 10,
+      "metadata": {
+        "description": "리소스 이름 접두사 (예: zbtask)"
+      }
+    },
+    "environment": {
+      "type": "string",
+      "defaultValue": "dev",
+      "allowedValues": [
+        "dev",
+        "prod"
+      ],
+      "metadata": {
+        "description": "배포 환경 (dev, prod)"
+      }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Azure 리전"
+      }
+    },
+    "adoOrganization": {
+      "type": "string",
+      "defaultValue": "azure-mvp",
+      "metadata": {
+        "description": "Azure DevOps 조직명"
+      }
+    },
+    "adoProject": {
+      "type": "string",
+      "defaultValue": "ZBTaskManager",
+      "metadata": {
+        "description": "Azure DevOps 프로젝트명"
+      }
+    },
+    "openAIResourceName": {
+      "type": "string",
+      "defaultValue": "zb-taskman",
+      "metadata": {
+        "description": "Azure OpenAI 리소스 이름 (기존 리소스 참조)"
+      }
+    },
+    "openAIDeploymentName": {
+      "type": "string",
+      "defaultValue": "gpt-4o",
+      "metadata": {
+        "description": "Azure OpenAI 배포 이름"
+      }
+    },
+    "tags": {
+      "type": "object",
+      "defaultValue": {
+        "Project": "ZBTaskManager",
+        "Environment": "[parameters('environment')]",
+        "ManagedBy": "Bicep",
+        "CreatedDate": "2026-01-29"
+      },
+      "metadata": {
+        "description": "리소스 태그"
+      }
+    }
+  },
+  "variables": {
+    "storageAccountName": "[toLower(replace(format('{0}st{1}{2}', parameters('namePrefix'), parameters('environment'), uniqueString(resourceGroup().id)), '-', ''))]",
+    "logicAppName": "[format('{0}-logic-{1}', parameters('namePrefix'), parameters('environment'))]",
+    "appServicePlanName": "[format('{0}-asp-{1}', parameters('namePrefix'), parameters('environment'))]",
+    "appInsightsName": "[format('{0}-appi-{1}', parameters('namePrefix'), parameters('environment'))]",
+    "gmailConnectionName": "[format('gmail-{0}', parameters('environment'))]",
+    "teamsConnectionName": "[format('teams-{0}', parameters('environment'))]",
+    "adoConnectionName": "[format('visualstudioteamservices-{0}', parameters('environment'))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "name": "[guid(resourceGroup().id, variables('logicAppName'), variables('storageAccountName'), 'StorageTableDataContributor')]",
+      "properties": {
+        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3')]",
+        "principalId": "[reference(resourceId('Microsoft.Resources/deployments', 'logicapp-deployment'), '2025-04-01').outputs.logicAppPrincipalId.value]",
+        "principalType": "ServicePrincipal"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'logicapp-deployment')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "storage-deployment",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "storageAccountName": {
+            "value": "[variables('storageAccountName')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "tags": {
+            "value": "[parameters('tags')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.38.33.27573",
+              "templateHash": "8107136155516127253"
+            }
+          },
+          "parameters": {
+            "storageAccountName": {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 24,
+              "metadata": {
+                "description": "Storage Account 이름 (3-24자, 소문자 및 숫자만)"
+              }
+            },
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "Azure 리전"
+              }
+            },
+            "tags": {
+              "type": "object",
+              "metadata": {
+                "description": "리소스 태그"
+              }
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Storage/storageAccounts",
+              "apiVersion": "2023-05-01",
+              "name": "[parameters('storageAccountName')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "sku": {
+                "name": "Standard_LRS"
+              },
+              "kind": "StorageV2",
+              "properties": {
+                "supportsHttpsTrafficOnly": true,
+                "minimumTlsVersion": "TLS1_2",
+                "allowBlobPublicAccess": false,
+                "allowSharedKeyAccess": true,
+                "publicNetworkAccess": "Enabled",
+                "networkAcls": {
+                  "defaultAction": "Allow",
+                  "bypass": "AzureServices"
+                },
+                "accessTier": "Hot"
+              }
+            },
+            {
+              "type": "Microsoft.Storage/storageAccounts/tableServices",
+              "apiVersion": "2023-05-01",
+              "name": "[format('{0}/{1}', parameters('storageAccountName'), 'default')]",
+              "properties": {},
+              "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Storage/storageAccounts/tableServices/tables",
+              "apiVersion": "2023-05-01",
+              "name": "[format('{0}/{1}/{2}', parameters('storageAccountName'), 'default', 'ProcessedEmails')]",
+              "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/tableServices', parameters('storageAccountName'), 'default')]"
+              ]
+            }
+          ],
+          "outputs": {
+            "storageAccountName": {
+              "type": "string",
+              "metadata": {
+                "description": "Storage Account 이름"
+              },
+              "value": "[parameters('storageAccountName')]"
+            },
+            "storageAccountId": {
+              "type": "string",
+              "metadata": {
+                "description": "Storage Account ID"
+              },
+              "value": "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]"
+            },
+            "storageAccountKey": {
+              "type": "string",
+              "metadata": {
+                "description": "Storage Account Primary Key (Managed Identity 전환 전까지 사용)"
+              },
+              "value": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2023-05-01').keys[0].value]"
+            },
+            "storageConnectionString": {
+              "type": "string",
+              "metadata": {
+                "description": "Storage Account 연결 문자열"
+              },
+              "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};AccountKey={1};EndpointSuffix=core.windows.net', parameters('storageAccountName'), listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2023-05-01').keys[0].value)]"
+            },
+            "tableEndpoint": {
+              "type": "string",
+              "metadata": {
+                "description": "Table Service Endpoint"
+              },
+              "value": "[reference(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2023-05-01').primaryEndpoints.table]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "logicapp-deployment",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "logicAppName": {
+            "value": "[variables('logicAppName')]"
+          },
+          "appServicePlanName": {
+            "value": "[variables('appServicePlanName')]"
+          },
+          "appInsightsName": {
+            "value": "[variables('appInsightsName')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "tags": {
+            "value": "[parameters('tags')]"
+          },
+          "storageAccountName": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'storage-deployment'), '2025-04-01').outputs.storageAccountName.value]"
+          },
+          "storageAccountKey": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'storage-deployment'), '2025-04-01').outputs.storageAccountKey.value]"
+          },
+          "adoOrganization": {
+            "value": "[parameters('adoOrganization')]"
+          },
+          "adoProject": {
+            "value": "[parameters('adoProject')]"
+          },
+          "openAIEndpoint": {
+            "value": "[format('https://{0}.cognitiveservices.azure.com/', parameters('openAIResourceName'))]"
+          },
+          "openAIDeploymentName": {
+            "value": "[parameters('openAIDeploymentName')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.38.33.27573",
+              "templateHash": "8339474905598522308"
+            }
+          },
+          "parameters": {
+            "logicAppName": {
+              "type": "string",
+              "metadata": {
+                "description": "Logic App 이름"
+              }
+            },
+            "appServicePlanName": {
+              "type": "string",
+              "metadata": {
+                "description": "App Service Plan 이름"
+              }
+            },
+            "appInsightsName": {
+              "type": "string",
+              "metadata": {
+                "description": "Application Insights 이름"
+              }
+            },
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "Azure 리전"
+              }
+            },
+            "tags": {
+              "type": "object",
+              "metadata": {
+                "description": "리소스 태그"
+              }
+            },
+            "storageAccountName": {
+              "type": "string",
+              "metadata": {
+                "description": "Storage Account 이름 (Logic App 런타임용)"
+              }
+            },
+            "storageAccountKey": {
+              "type": "securestring",
+              "metadata": {
+                "description": "Storage Account Primary Key"
+              }
+            },
+            "adoOrganization": {
+              "type": "string",
+              "metadata": {
+                "description": "Azure DevOps 조직명"
+              }
+            },
+            "adoProject": {
+              "type": "string",
+              "metadata": {
+                "description": "Azure DevOps 프로젝트명"
+              }
+            },
+            "openAIEndpoint": {
+              "type": "string",
+              "metadata": {
+                "description": "Azure OpenAI Endpoint"
+              }
+            },
+            "openAIDeploymentName": {
+              "type": "string",
+              "metadata": {
+                "description": "Azure OpenAI 배포 이름"
+              }
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Web/serverfarms",
+              "apiVersion": "2023-12-01",
+              "name": "[parameters('appServicePlanName')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "sku": {
+                "name": "WS1",
+                "tier": "WorkflowStandard",
+                "size": "WS1",
+                "family": "WS",
+                "capacity": 1
+              },
+              "kind": "elastic",
+              "properties": {
+                "perSiteScaling": false,
+                "elasticScaleEnabled": true,
+                "maximumElasticWorkerCount": 20,
+                "isSpot": false,
+                "reserved": false,
+                "targetWorkerCount": 0,
+                "targetWorkerSizeId": 0,
+                "zoneRedundant": false
+              }
+            },
+            {
+              "type": "Microsoft.Insights/components",
+              "apiVersion": "2020-02-02",
+              "name": "[parameters('appInsightsName')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "kind": "web",
+              "properties": {
+                "Application_Type": "web",
+                "Request_Source": "rest",
+                "RetentionInDays": 90,
+                "publicNetworkAccessForIngestion": "Enabled",
+                "publicNetworkAccessForQuery": "Enabled"
+              }
+            },
+            {
+              "type": "Microsoft.Web/sites",
+              "apiVersion": "2023-12-01",
+              "name": "[parameters('logicAppName')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "kind": "functionapp,workflowapp",
+              "identity": {
+                "type": "SystemAssigned"
+              },
+              "properties": {
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('appServicePlanName'))]",
+                "httpsOnly": true,
+                "siteConfig": {
+                  "netFrameworkVersion": "v6.0",
+                  "use32BitWorkerProcess": false,
+                  "ftpsState": "Disabled",
+                  "alwaysOn": false,
+                  "http20Enabled": true,
+                  "appSettings": [
+                    {
+                      "name": "FUNCTIONS_EXTENSION_VERSION",
+                      "value": "~4"
+                    },
+                    {
+                      "name": "FUNCTIONS_WORKER_RUNTIME",
+                      "value": "node"
+                    },
+                    {
+                      "name": "WEBSITE_NODE_DEFAULT_VERSION",
+                      "value": "~18"
+                    },
+                    {
+                      "name": "AzureWebJobsStorage",
+                      "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};AccountKey={1};EndpointSuffix=core.windows.net', parameters('storageAccountName'), parameters('storageAccountKey'))]"
+                    },
+                    {
+                      "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
+                      "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};AccountKey={1};EndpointSuffix=core.windows.net', parameters('storageAccountName'), parameters('storageAccountKey'))]"
+                    },
+                    {
+                      "name": "WEBSITE_CONTENTSHARE",
+                      "value": "[toLower(parameters('logicAppName'))]"
+                    },
+                    {
+                      "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                      "value": "[reference(resourceId('Microsoft.Insights/components', parameters('appInsightsName')), '2020-02-02').InstrumentationKey]"
+                    },
+                    {
+                      "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
+                      "value": "[reference(resourceId('Microsoft.Insights/components', parameters('appInsightsName')), '2020-02-02').ConnectionString]"
+                    },
+                    {
+                      "name": "ADO_ORGANIZATION",
+                      "value": "[parameters('adoOrganization')]"
+                    },
+                    {
+                      "name": "ADO_PROJECT",
+                      "value": "[parameters('adoProject')]"
+                    },
+                    {
+                      "name": "AZURE_OPENAI_ENDPOINT",
+                      "value": "[parameters('openAIEndpoint')]"
+                    },
+                    {
+                      "name": "AZURE_OPENAI_DEPLOYMENT_NAME",
+                      "value": "[parameters('openAIDeploymentName')]"
+                    },
+                    {
+                      "name": "AZURE_OPENAI_API_VERSION",
+                      "value": "2024-08-01-preview"
+                    },
+                    {
+                      "name": "TABLE_STORAGE_CONNECTION",
+                      "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};AccountKey={1};EndpointSuffix=core.windows.net', parameters('storageAccountName'), parameters('storageAccountKey'))]"
+                    },
+                    {
+                      "name": "TABLE_NAME",
+                      "value": "ProcessedEmails"
+                    },
+                    {
+                      "name": "ADO_PAT",
+                      "value": ""
+                    }
+                  ]
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Insights/components', parameters('appInsightsName'))]",
+                "[resourceId('Microsoft.Web/serverfarms', parameters('appServicePlanName'))]"
+              ]
+            }
+          ],
+          "outputs": {
+            "logicAppName": {
+              "type": "string",
+              "metadata": {
+                "description": "Logic App 이름"
+              },
+              "value": "[parameters('logicAppName')]"
+            },
+            "logicAppId": {
+              "type": "string",
+              "metadata": {
+                "description": "Logic App ID"
+              },
+              "value": "[resourceId('Microsoft.Web/sites', parameters('logicAppName'))]"
+            },
+            "logicAppPrincipalId": {
+              "type": "string",
+              "metadata": {
+                "description": "Logic App Principal ID (Managed Identity)"
+              },
+              "value": "[reference(resourceId('Microsoft.Web/sites', parameters('logicAppName')), '2023-12-01', 'full').identity.principalId]"
+            },
+            "logicAppUrl": {
+              "type": "string",
+              "metadata": {
+                "description": "Logic App 기본 URL"
+              },
+              "value": "[format('https://{0}', reference(resourceId('Microsoft.Web/sites', parameters('logicAppName')), '2023-12-01').defaultHostName)]"
+            },
+            "appInsightsKey": {
+              "type": "string",
+              "metadata": {
+                "description": "Application Insights Instrumentation Key"
+              },
+              "value": "[reference(resourceId('Microsoft.Insights/components', parameters('appInsightsName')), '2020-02-02').InstrumentationKey]"
+            },
+            "appServicePlanId": {
+              "type": "string",
+              "metadata": {
+                "description": "App Service Plan ID"
+              },
+              "value": "[resourceId('Microsoft.Web/serverfarms', parameters('appServicePlanName'))]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'storage-deployment')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "apiconnections-deployment",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "tags": {
+            "value": "[parameters('tags')]"
+          },
+          "gmailConnectionName": {
+            "value": "[variables('gmailConnectionName')]"
+          },
+          "teamsConnectionName": {
+            "value": "[variables('teamsConnectionName')]"
+          },
+          "adoConnectionName": {
+            "value": "[variables('adoConnectionName')]"
+          },
+          "logicAppPrincipalId": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'logicapp-deployment'), '2025-04-01').outputs.logicAppPrincipalId.value]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.38.33.27573",
+              "templateHash": "6863707733101820276"
+            }
+          },
+          "parameters": {
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "Azure 리전"
+              }
+            },
+            "tags": {
+              "type": "object",
+              "metadata": {
+                "description": "리소스 태그"
+              }
+            },
+            "gmailConnectionName": {
+              "type": "string",
+              "metadata": {
+                "description": "Gmail API Connection 이름"
+              }
+            },
+            "teamsConnectionName": {
+              "type": "string",
+              "metadata": {
+                "description": "Teams API Connection 이름"
+              }
+            },
+            "adoConnectionName": {
+              "type": "string",
+              "metadata": {
+                "description": "Azure DevOps API Connection 이름"
+              }
+            },
+            "logicAppPrincipalId": {
+              "type": "string",
+              "metadata": {
+                "description": "Logic App Principal ID (Access Policy용)"
+              }
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Web/connections",
+              "apiVersion": "2016-06-01",
+              "name": "[parameters('gmailConnectionName')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "properties": {
+                "displayName": "Gmail - Email2ADO Workflow",
+                "api": {
+                  "id": "[subscriptionResourceId('Microsoft.Web/locations/managedApis', parameters('location'), 'gmail')]",
+                  "displayName": "Gmail",
+                  "description": "Gmail connector for email triggers",
+                  "iconUri": "https://connectoricons-prod.azureedge.net/releases/v1.0.1673/1.0.1673.3557/gmail/icon.png",
+                  "brandColor": "#EA4335"
+                },
+                "parameterValues": {}
+              }
+            },
+            {
+              "type": "Microsoft.Web/connections/accessPolicies",
+              "apiVersion": "2016-06-01",
+              "name": "[format('{0}/{1}', parameters('gmailConnectionName'), 'logicapp-policy')]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "principal": {
+                  "type": "ActiveDirectory",
+                  "identity": {
+                    "tenantId": "[subscription().tenantId]",
+                    "objectId": "[parameters('logicAppPrincipalId')]"
+                  }
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Web/connections', parameters('gmailConnectionName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Web/connections",
+              "apiVersion": "2016-06-01",
+              "name": "[parameters('teamsConnectionName')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "properties": {
+                "displayName": "Microsoft Teams - Email2ADO Notifications",
+                "api": {
+                  "id": "[subscriptionResourceId('Microsoft.Web/locations/managedApis', parameters('location'), 'teams')]",
+                  "displayName": "Microsoft Teams",
+                  "description": "Teams connector for notifications",
+                  "iconUri": "https://connectoricons-prod.azureedge.net/releases/v1.0.1673/1.0.1673.3557/teams/icon.png",
+                  "brandColor": "#4B53BC"
+                },
+                "parameterValues": {}
+              }
+            },
+            {
+              "type": "Microsoft.Web/connections/accessPolicies",
+              "apiVersion": "2016-06-01",
+              "name": "[format('{0}/{1}', parameters('teamsConnectionName'), 'logicapp-policy')]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "principal": {
+                  "type": "ActiveDirectory",
+                  "identity": {
+                    "tenantId": "[subscription().tenantId]",
+                    "objectId": "[parameters('logicAppPrincipalId')]"
+                  }
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Web/connections', parameters('teamsConnectionName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Web/connections",
+              "apiVersion": "2016-06-01",
+              "name": "[parameters('adoConnectionName')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "properties": {
+                "displayName": "Azure DevOps - ZBTaskManager",
+                "api": {
+                  "id": "[subscriptionResourceId('Microsoft.Web/locations/managedApis', parameters('location'), 'visualstudioteamservices')]",
+                  "displayName": "Azure DevOps",
+                  "description": "Azure DevOps connector for work item management",
+                  "iconUri": "https://connectoricons-prod.azureedge.net/releases/v1.0.1673/1.0.1673.3557/visualstudioteamservices/icon.png",
+                  "brandColor": "#0078D7"
+                },
+                "parameterValues": {}
+              }
+            },
+            {
+              "type": "Microsoft.Web/connections/accessPolicies",
+              "apiVersion": "2016-06-01",
+              "name": "[format('{0}/{1}', parameters('adoConnectionName'), 'logicapp-policy')]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "principal": {
+                  "type": "ActiveDirectory",
+                  "identity": {
+                    "tenantId": "[subscription().tenantId]",
+                    "objectId": "[parameters('logicAppPrincipalId')]"
+                  }
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Web/connections', parameters('adoConnectionName'))]"
+              ]
+            }
+          ],
+          "outputs": {
+            "gmailConnectionName": {
+              "type": "string",
+              "metadata": {
+                "description": "Gmail Connection 이름"
+              },
+              "value": "[parameters('gmailConnectionName')]"
+            },
+            "gmailConnectionId": {
+              "type": "string",
+              "metadata": {
+                "description": "Gmail Connection ID"
+              },
+              "value": "[resourceId('Microsoft.Web/connections', parameters('gmailConnectionName'))]"
+            },
+            "teamsConnectionName": {
+              "type": "string",
+              "metadata": {
+                "description": "Teams Connection 이름"
+              },
+              "value": "[parameters('teamsConnectionName')]"
+            },
+            "teamsConnectionId": {
+              "type": "string",
+              "metadata": {
+                "description": "Teams Connection ID"
+              },
+              "value": "[resourceId('Microsoft.Web/connections', parameters('teamsConnectionName'))]"
+            },
+            "adoConnectionName": {
+              "type": "string",
+              "metadata": {
+                "description": "ADO Connection 이름"
+              },
+              "value": "[parameters('adoConnectionName')]"
+            },
+            "adoConnectionId": {
+              "type": "string",
+              "metadata": {
+                "description": "ADO Connection ID"
+              },
+              "value": "[resourceId('Microsoft.Web/connections', parameters('adoConnectionName'))]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'logicapp-deployment')]"
+      ]
+    }
+  ],
+  "outputs": {
+    "logicAppName": {
+      "type": "string",
+      "metadata": {
+        "description": "Logic App 이름"
+      },
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'logicapp-deployment'), '2025-04-01').outputs.logicAppName.value]"
+    },
+    "logicAppPrincipalId": {
+      "type": "string",
+      "metadata": {
+        "description": "Logic App Principal ID (MSI)"
+      },
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'logicapp-deployment'), '2025-04-01').outputs.logicAppPrincipalId.value]"
+    },
+    "storageAccountName": {
+      "type": "string",
+      "metadata": {
+        "description": "Storage Account 이름"
+      },
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'storage-deployment'), '2025-04-01').outputs.storageAccountName.value]"
+    },
+    "gmailConnectionName": {
+      "type": "string",
+      "metadata": {
+        "description": "Gmail Connection Runtime URL (배포 후 Azure Portal에서 확인)"
+      },
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'apiconnections-deployment'), '2025-04-01').outputs.gmailConnectionName.value]"
+    },
+    "teamsConnectionName": {
+      "type": "string",
+      "metadata": {
+        "description": "Teams Connection Runtime URL (배포 후 Azure Portal에서 확인)"
+      },
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'apiconnections-deployment'), '2025-04-01').outputs.teamsConnectionName.value]"
+    },
+    "adoConnectionName": {
+      "type": "string",
+      "metadata": {
+        "description": "ADO Connection Runtime URL (배포 후 Azure Portal에서 확인)"
+      },
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'apiconnections-deployment'), '2025-04-01').outputs.adoConnectionName.value]"
+    },
+    "openAIEndpoint": {
+      "type": "string",
+      "metadata": {
+        "description": "Azure OpenAI Endpoint"
+      },
+      "value": "[format('https://{0}.cognitiveservices.azure.com/', parameters('openAIResourceName'))]"
+    }
+  }
+}
