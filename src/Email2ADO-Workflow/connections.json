@@ -1,0 +1,56 @@
+{
+  "managedApiConnections": {
+    "gmail": {
+      "api": {
+        "id": "/subscriptions/@appsetting('AZURE_SUBSCRIPTION_ID')/providers/Microsoft.Web/locations/@appsetting('AZURE_LOCATION')/managedApis/gmail"
+      },
+      "connection": {
+        "id": "/subscriptions/@appsetting('AZURE_SUBSCRIPTION_ID')/resourceGroups/@appsetting('AZURE_RESOURCE_GROUP')/providers/Microsoft.Web/connections/@appsetting('GMAIL_CONNECTION_NAME')"
+      },
+      "connectionRuntimeUrl": "@appsetting('GMAIL_CONNECTION_RUNTIMEURL')",
+      "authentication": {
+        "type": "ManagedServiceIdentity"
+      }
+    },
+    "teams": {
+      "api": {
+        "id": "/subscriptions/@appsetting('AZURE_SUBSCRIPTION_ID')/providers/Microsoft.Web/locations/@appsetting('AZURE_LOCATION')/managedApis/teams"
+      },
+      "connection": {
+        "id": "/subscriptions/@appsetting('AZURE_SUBSCRIPTION_ID')/resourceGroups/@appsetting('AZURE_RESOURCE_GROUP')/providers/Microsoft.Web/connections/@appsetting('TEAMS_CONNECTION_NAME')"
+      },
+      "connectionRuntimeUrl": "@appsetting('TEAMS_CONNECTION_RUNTIMEURL')",
+      "authentication": {
+        "type": "ManagedServiceIdentity"
+      }
+    },
+    "visualstudioteamservices": {
+      "api": {
+        "id": "/subscriptions/@appsetting('AZURE_SUBSCRIPTION_ID')/providers/Microsoft.Web/locations/@appsetting('AZURE_LOCATION')/managedApis/visualstudioteamservices"
+      },
+      "connection": {
+        "id": "/subscriptions/@appsetting('AZURE_SUBSCRIPTION_ID')/resourceGroups/@appsetting('AZURE_RESOURCE_GROUP')/providers/Microsoft.Web/connections/@appsetting('ADO_CONNECTION_NAME')"
+      },
+      "connectionRuntimeUrl": "@appsetting('ADO_CONNECTION_RUNTIMEURL')",
+      "authentication": {
+        "type": "ManagedServiceIdentity"
+      }
+    }
+  },
+  "serviceProviderConnections": {
+    "azureOpenAI": {
+      "parameterValues": {
+        "endpoint": "@appsetting('AZURE_OPENAI_ENDPOINT')",
+        "apiVersion": "@appsetting('AZURE_OPENAI_API_VERSION')"
+      },
+      "serviceProvider": {
+        "id": "/serviceProviders/openai"
+      },
+      "displayName": "Azure OpenAI (GPT-4o)",
+      "authentication": {
+        "type": "ManagedServiceIdentity",
+        "managedIdentityId": ""
+      }
+    }
+  }
+}

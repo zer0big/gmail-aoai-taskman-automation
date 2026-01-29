@@ -1,0 +1,373 @@
+{
+  "definition": {
+    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+    "contentVersion": "2.0.0.0",
+    "actions": {
+      "Initialize_MessageId": {
+        "type": "InitializeVariable",
+        "runAfter": {},
+        "inputs": {
+          "variables": [
+            {
+              "name": "MessageId",
+              "type": "string",
+              "value": "@triggerBody()?['Id']"
+            }
+          ]
+        },
+        "description": "Gmail Message ID 추출 (Office 365의 internetMessageId 대신 Id 사용)"
+      },
+      "Initialize_Subject": {
+        "type": "InitializeVariable",
+        "runAfter": {
+          "Initialize_MessageId": ["Succeeded"]
+        },
+        "inputs": {
+          "variables": [
+            {
+              "name": "Subject",
+              "type": "string",
+              "value": "@triggerBody()?['Subject']"
+            }
+          ]
+        },
+        "description": "Gmail 이메일 제목 추출"
+      },
+      "Initialize_Body": {
+        "type": "InitializeVariable",
+        "runAfter": {
+          "Initialize_Subject": ["Succeeded"]
+        },
+        "inputs": {
+          "variables": [
+            {
+              "name": "Body",
+              "type": "string",
+              "value": "@{coalesce(triggerBody()?['Body'], triggerBody()?['Snippet'], '')}"
+            }
+          ]
+        },
+        "description": "Gmail 본문 추출 (Body 또는 Snippet 사용)"
+      },
+      "Initialize_ReceivedTimeKST": {
+        "type": "InitializeVariable",
+        "runAfter": {
+          "Initialize_Body": ["Succeeded"]
+        },
+        "inputs": {
+          "variables": [
+            {
+              "name": "ReceivedTimeKST",
+              "type": "string",
+              "value": "@{addHours(triggerBody()?['DateTimeReceived'], 9)}"
+            }
+          ]
+        },
+        "description": "Gmail 수신 시간을 KST(+9시간)로 변환"
+      },
+      "Initialize_SenderEmail": {
+        "type": "InitializeVariable",
+        "runAfter": {
+          "Initialize_ReceivedTimeKST": ["Succeeded"]
+        },
+        "inputs": {
+          "variables": [
+            {
+              "name": "SenderEmail",
+              "type": "string",
+              "value": "@triggerBody()?['From']"
+            }
+          ]
+        },
+        "description": "Gmail 발신자 이메일 추출"
+      },
+      "Initialize_RecipientEmail": {
+        "type": "InitializeVariable",
+        "runAfter": {
+          "Initialize_SenderEmail": ["Succeeded"]
+        },
+        "inputs": {
+          "variables": [
+            {
+              "name": "RecipientEmail",
+              "type": "string",
+              "value": "@{if(empty(triggerBody()?['Cc']), coalesce(triggerBody()?['To'], ''), concat(coalesce(triggerBody()?['To'], ''), '; ', triggerBody()?['Cc']))}"
+            }
+          ]
+        },
+        "description": "Gmail 수신자 목록 (To + Cc) 추출"
+      },
+      "Initialize_AI_Analysis_Result": {
+        "type": "InitializeVariable",
+        "runAfter": {
+          "Initialize_RecipientEmail": ["Succeeded"]
+        },
+        "inputs": {
+          "variables": [
+            {
+              "name": "AIAnalysisResult",
+              "type": "string",
+              "value": ""
+            }
+          ]
+        },
+        "description": "AI 분석 결과를 저장할 변수 초기화"
+      },
+      "Initialize_Tags": {
+        "type": "InitializeVariable",
+        "runAfter": {
+          "Initialize_AI_Analysis_Result": ["Succeeded"]
+        },
+        "inputs": {
+          "variables": [
+            {
+              "name": "Tags",
+              "type": "string",
+              "value": "@{if(or(contains(variables('RecipientEmail'), '@'), contains(variables('RecipientEmail'), ';'), contains(variables('RecipientEmail'), ',')), 'Email2ADO; Gmail', 'Email2ADO')}"
+            }
+          ]
+        },
+        "description": "Work Item 태그 설정 (수신자 수에 따라 다르게 적용)"
+      },
+      "Check_MessageId_Exists_In_TableStorage": {
+        "type": "Http",
+        "runAfter": {
+          "Initialize_Tags": ["Succeeded"]
+        },
+        "inputs": {
+          "method": "GET",
+          "uri": "https://@{appsetting('STORAGE_ACCOUNT_NAME')}.table.core.windows.net/ProcessedEmails(PartitionKey='@{formatDateTime(utcNow(), 'yyyy-MM')}',RowKey='@{encodeURIComponent(variables('MessageId'))}')",
+          "headers": {
+            "x-ms-version": "2020-12-06",
+            "Accept": "application/json;odata=nometadata"
+          },
+          "authentication": {
+            "type": "ManagedServiceIdentity",
+            "audience": "https://storage.azure.com/"
+          }
+        },
+        "runtimeConfiguration": {
+          "contentTransfer": {
+            "transferMode": "Chunked"
+          }
+        },
+        "description": "Table Storage에서 이미 처리된 메일인지 확인 (중복 방지)"
+      },
+      "Condition_MessageId_Duplicate": {
+        "type": "If",
+        "runAfter": {
+          "Check_MessageId_Exists_In_TableStorage": ["Succeeded", "Failed"]
+        },
+        "expression": {
+          "and": [
+            {
+              "equals": [
+                "@outputs('Check_MessageId_Exists_In_TableStorage')['statusCode']",
+                200
+              ]
+            }
+          ]
+        },
+        "actions": {
+          "Terminate_Duplicate_Mail": {
+            "type": "Terminate",
+            "runAfter": {},
+            "inputs": {
+              "runStatus": "Succeeded"
+            },
+            "description": "중복 메일 처리 시 워크플로우 정상 종료"
+          }
+        },
+        "else": {
+          "actions": {
+            "Insert_MessageId_To_TableStorage": {
+              "type": "Http",
+              "runAfter": {},
+              "inputs": {
+                "method": "POST",
+                "uri": "https://@{appsetting('STORAGE_ACCOUNT_NAME')}.table.core.windows.net/ProcessedEmails",
+                "headers": {
+                  "Content-Type": "application/json",
+                  "Accept": "application/json;odata=nometadata",
+                  "x-ms-version": "2020-12-06"
+                },
+                "body": {
+                  "PartitionKey": "@{formatDateTime(utcNow(), 'yyyy-MM')}",
+                  "RowKey": "@{variables('MessageId')}",
+                  "Subject": "@{variables('Subject')}",
+                  "ReceivedTimeKST": "@{variables('ReceivedTimeKST')}",
+                  "SenderEmail": "@{variables('SenderEmail')}",
+                  "ProcessedTime": "@{utcNow()}",
+                  "Source": "Gmail"
+                },
+                "authentication": {
+                  "type": "ManagedServiceIdentity",
+                  "audience": "https://storage.azure.com/"
+                }
+              },
+              "runtimeConfiguration": {
+                "contentTransfer": {
+                  "transferMode": "Chunked"
+                }
+              },
+              "description": "처리 중인 메일 ID를 Table Storage에 저장 (중복 방지)"
+            },
+            "Analyze_Email_With_AI": {
+              "type": "ServiceProvider",
+              "runAfter": {
+                "Insert_MessageId_To_TableStorage": ["Succeeded"]
+              },
+              "inputs": {
+                "serviceProviderConfiguration": {
+                  "connectionName": "azureOpenAI",
+                  "operationId": "getChatCompletions",
+                  "serviceProviderId": "/serviceProviders/openai"
+                },
+                "parameters": {
+                  "deploymentId": "@appsetting('AZURE_OPENAI_DEPLOYMENT_NAME')",
+                  "messages": [
+                    {
+                      "role": "system",
+                      "content": "당신은 기업 이메일 분석 전문가입니다. 수신된 이메일을 분석하여 다음 형식으로 응답해주세요:\n\n## 📜 요약\n(메일 핵심 내용을 2-3문장으로 요약)\n\n## 💡 인사이트\n(이 메일이 의미하는 바, 중요도, 관련 맥락 분석)\n\n## ✔ 액션 아이템\n(수신자가 취해야 할 구체적인 조치 사항을 번호 목록으로)\n\n한글로 응답하고, 간결하면서도 명확하게 작성하세요."
+                    },
+                    {
+                      "role": "user",
+                      "content": "다음 이메일을 분석해주세요:\n\n발신자: @{variables('SenderEmail')}\n제목: @{variables('Subject')}\n\n본문:\n@{variables('Body')}"
+                    }
+                  ],
+                  "temperature": 0.3,
+                  "max_tokens": 1000
+                }
+              },
+              "description": "Azure OpenAI (GPT-4o)를 사용하여 이메일 내용 분석"
+            },
+            "Set_AI_Analysis_Result": {
+              "type": "SetVariable",
+              "runAfter": {
+                "Analyze_Email_With_AI": ["Succeeded"]
+              },
+              "inputs": {
+                "name": "AIAnalysisResult",
+                "value": "@{body('Analyze_Email_With_AI')?['content']}"
+              },
+              "description": "AI 분석 결과를 변수에 저장"
+            },
+            "Create_ADO_WorkItem": {
+              "type": "ApiConnection",
+              "runAfter": {
+                "Set_AI_Analysis_Result": ["Succeeded"]
+              },
+              "inputs": {
+                "host": {
+                  "connection": {
+                    "referenceName": "visualstudioteamservices"
+                  }
+                },
+                "method": "patch",
+                "path": "/@{encodeURIComponent(appsetting('ADO_PROJECT'))}/_apis/wit/workitems/$@{encodeURIComponent('Issue')}",
+                "queries": {
+                  "account": "@{appsetting('ADO_ORGANIZATION')}"
+                },
+                "body": {
+                  "title": "@{variables('Subject')}",
+                  "description": "<h2>🤖 AI 분석 결과</h2><div style='background-color:#f0f7ff;padding:15px;border-radius:8px;margin-bottom:20px;border-left:4px solid #0078d4;'>@{replace(replace(variables('AIAnalysisResult'), '\n', '<br/>'), '## ', '<h4 style=\"color:#0078d4;margin-top:10px;\">')}</div><hr style='border:1px solid #ddd;margin:20px 0;'/><h2>📧 원본 메일 정보</h2><table style='width:100%;border-collapse:collapse;margin-bottom:15px;'><tr style='background:#f5f5f5;'><td style='padding:8px;border:1px solid #ddd;width:100px;'><strong>발신자</strong></td><td style='padding:8px;border:1px solid #ddd;'>@{variables('SenderEmail')}</td></tr><tr><td style='padding:8px;border:1px solid #ddd;'><strong>수신자</strong></td><td style='padding:8px;border:1px solid #ddd;'>@{variables('RecipientEmail')}</td></tr><tr style='background:#f5f5f5;'><td style='padding:8px;border:1px solid #ddd;'><strong>수신 시간</strong></td><td style='padding:8px;border:1px solid #ddd;'>@{formatDateTime(variables('ReceivedTimeKST'), 'yyyy-MM-dd HH:mm:ss')} (KST)</td></tr><tr><td style='padding:8px;border:1px solid #ddd;'><strong>소스</strong></td><td style='padding:8px;border:1px solid #ddd;'>📧 Gmail</td></tr></table><h3>📝 본문 내용</h3><div style='background:#fafafa;padding:15px;border-radius:8px;border:1px solid #eee;white-space:pre-wrap;font-family:inherit;'>@{first(split(variables('Body'), '________________________________'))}</div>"
+                }
+              },
+              "description": "Azure DevOps에 Issue Work Item 생성"
+            },
+            "Update_ADO_WorkItem_Fields": {
+              "type": "Http",
+              "runAfter": {
+                "Create_ADO_WorkItem": ["Succeeded"]
+              },
+              "inputs": {
+                "method": "PATCH",
+                "uri": "https://dev.azure.com/@{appsetting('ADO_ORGANIZATION')}/@{appsetting('ADO_PROJECT')}/_apis/wit/workitems/@{body('Create_ADO_WorkItem')?['id']}?api-version=7.1",
+                "headers": {
+                  "Content-Type": "application/json-patch+json",
+                  "Authorization": "Basic @{base64(concat(':', appsetting('ADO_PAT')))}"
+                },
+                "body": [
+                  {
+                    "op": "add",
+                    "path": "/fields/System.AssignedTo",
+                    "value": "@{variables('RecipientEmail')}"
+                  },
+                  {
+                    "op": "add",
+                    "path": "/fields/System.Tags",
+                    "value": "@{variables('Tags')}"
+                  }
+                ]
+              },
+              "runtimeConfiguration": {
+                "contentTransfer": {
+                  "transferMode": "Chunked"
+                }
+              },
+              "description": "VSTS 커넥터 제약 우회: PAT + HTTP Action으로 AssignedTo/Tags 설정"
+            },
+            "Send_Teams_Notification": {
+              "type": "ApiConnection",
+              "runAfter": {
+                "Update_ADO_WorkItem_Fields": ["Succeeded", "Failed", "Skipped"]
+              },
+              "inputs": {
+                "host": {
+                  "connection": {
+                    "referenceName": "teams"
+                  }
+                },
+                "method": "post",
+                "path": "/beta/teams/@{encodeURIComponent(appsetting('TEAMS_TEAM_ID'))}/channels/@{encodeURIComponent(appsetting('TEAMS_CHANNEL_ID'))}/messages",
+                "body": {
+                  "body": {
+                    "contentType": "html",
+                    "content": "<b>💬 새 Work Item 생성됨 (AI 분석 완료)</b><br/><br/><b>📧 소스:</b> Gmail<br/><b>🏷️ 태그:</b> @{variables('Tags')}<br/><b>제목:</b> @{variables('Subject')}<br/><b>발신자:</b> @{variables('SenderEmail')}<br/><b>수신 시간:</b> @{variables('ReceivedTimeKST')}<br/><b>담당자:</b> @{variables('RecipientEmail')}<br/><br/><b>🤖 AI 요약:</b><br/>@{replace(variables('AIAnalysisResult'), '\n', '<br/>')}<br/><br/><a href='https://dev.azure.com/@{appsetting('ADO_ORGANIZATION')}/@{appsetting('ADO_PROJECT')}/_workitems/edit/@{body('Create_ADO_WorkItem')?['id']}'>Work Item #@{body('Create_ADO_WorkItem')?['id']} 보기</a>"
+                  }
+                }
+              },
+              "description": "Microsoft Teams 채널에 알림 전송"
+            }
+          }
+        },
+        "description": "중복 메일 여부에 따른 분기 처리"
+      }
+    },
+    "outputs": {},
+    "triggers": {
+      "When_a_new_email_arrives_Gmail": {
+        "type": "ApiConnection",
+        "recurrence": {
+          "frequency": "Minute",
+          "interval": 1
+        },
+        "inputs": {
+          "host": {
+            "connection": {
+              "referenceName": "gmail"
+            }
+          },
+          "method": "get",
+          "path": "/Mail/OnNewEmail",
+          "queries": {
+            "label": "INBOX",
+            "importance": "All",
+            "starred": "All",
+            "fetchOnlyWithAttachments": false,
+            "includeAttachments": false
+          }
+        },
+        "splitOn": "@triggerBody()?['value']",
+        "description": "Gmail 받은편지함에 새 이메일 도착 시 트리거 (1분 간격 폴링)"
+      }
+    },
+    "parameters": {
+      "$connections": {
+        "type": "Object",
+        "defaultValue": {}
+      }
+    }
+  },
+  "kind": "Stateful"
+}

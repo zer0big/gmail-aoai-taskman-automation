@@ -3,19 +3,30 @@
   "Values": {
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "FUNCTIONS_WORKER_RUNTIME": "node",
+    "FUNCTIONS_EXTENSION_VERSION": "~4",
+    "WEBSITE_NODE_DEFAULT_VERSION": "~18",
     
     "// === Azure 기본 설정 ===": "",
-    "WORKFLOWS_SUBSCRIPTION_ID": "<your-subscription-id>",
-    "WORKFLOWS_RESOURCE_GROUP_NAME": "<your-resource-group>",
-    "WORKFLOWS_LOCATION_NAME": "koreacentral",
+    "AZURE_SUBSCRIPTION_ID": "<your-subscription-id>",
+    "AZURE_RESOURCE_GROUP": "<your-resource-group>",
+    "AZURE_LOCATION": "koreacentral",
     
     "// === Storage Account (Table Storage) ===": "",
     "STORAGE_ACCOUNT_NAME": "<your-storage-account>",
+    "TABLE_STORAGE_CONNECTION": "<your-storage-connection-string>",
+    "TABLE_NAME": "ProcessedEmails",
     
-    "// === API Connections (Azure Portal에서 복사) ===": "",
-    "GMAIL_CONNECTION_RUNTIME_URL": "<gmail-connection-runtime-url>",
-    "TEAMS_CONNECTION_RUNTIME_URL": "<teams-connection-runtime-url>",
-    "ADO_CONNECTION_RUNTIME_URL": "<ado-connection-runtime-url>",
+    "// === Gmail API Connection ===": "",
+    "GMAIL_CONNECTION_NAME": "gmail-dev",
+    "GMAIL_CONNECTION_RUNTIMEURL": "<gmail-connection-runtime-url>",
+    
+    "// === Teams API Connection ===": "",
+    "TEAMS_CONNECTION_NAME": "teams-dev",
+    "TEAMS_CONNECTION_RUNTIMEURL": "<teams-connection-runtime-url>",
+    
+    "// === ADO API Connection ===": "",
+    "ADO_CONNECTION_NAME": "visualstudioteamservices-dev",
+    "ADO_CONNECTION_RUNTIMEURL": "<ado-connection-runtime-url>",
     
     "// === Azure DevOps ===": "",
     "ADO_ORGANIZATION": "azure-mvp",
@@ -27,8 +38,8 @@
     "TEAMS_CHANNEL_ID": "<your-teams-channel-id>",
     
     "// === Azure OpenAI ===": "",
-    "AZURE_OPENAI_ENDPOINT": "<your-openai-endpoint>",
-    "AZURE_OPENAI_API_KEY": "<your-openai-api-key>",
-    "AZURE_OPENAI_DEPLOYMENT_NAME": "gpt-4o"
+    "AZURE_OPENAI_ENDPOINT": "https://zb-taskman.cognitiveservices.azure.com/",
+    "AZURE_OPENAI_DEPLOYMENT_NAME": "gpt-4o",
+    "AZURE_OPENAI_API_VERSION": "2024-08-01-preview"
   }
 }
