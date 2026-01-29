@@ -1,0 +1,32 @@
+# Git 제외 파일 목록
+
+# 환경 설정 (비밀 정보 포함)
+local.settings.json
+*.local.json
+
+# Azure Functions
+bin/
+obj/
+.vs/
+.vscode/
+
+# 로그
+*.log
+logs/
+
+# 빌드 산출물
+*.zip
+dist/
+
+# OS 파일
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+*.suo
+*.user
+
+# 임시 파일
+*.tmp
+*.temp
