@@ -1,45 +1,53 @@
 {
   "IsEncrypted": false,
   "Values": {
+    "// ============================================================": "",
+    "// 로컬 개발 환경 설정 파일": "",
+    "// 이 파일을 복사하여 local.settings.json 으로 저장 후 값을 채워주세요": "",
+    "// local.settings.json 은 .gitignore 에 포함되어 Git에 커밋되지 않습니다": "",
+    "// ============================================================": "",
+
+    "// === Azure Functions Runtime ===": "",
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "FUNCTIONS_WORKER_RUNTIME": "node",
     "FUNCTIONS_EXTENSION_VERSION": "~4",
     "WEBSITE_NODE_DEFAULT_VERSION": "~18",
-    
+    "APP_KIND": "workflowApp",
+
     "// === Azure 기본 설정 ===": "",
-    "AZURE_SUBSCRIPTION_ID": "<your-subscription-id>",
-    "AZURE_RESOURCE_GROUP": "<your-resource-group>",
+    "AZURE_SUBSCRIPTION_ID": "3864b016-4594-40ad-a96b-4a08ac96b537",
+    "AZURE_RESOURCE_GROUP": "rg-email2ado-dev",
     "AZURE_LOCATION": "koreacentral",
-    
-    "// === Storage Account (Table Storage) ===": "",
-    "STORAGE_ACCOUNT_NAME": "<your-storage-account>",
-    "TABLE_STORAGE_CONNECTION": "<your-storage-connection-string>",
+
+    "// === Storage Account (Table Storage for Duplicate Check) ===": "",
+    "STORAGE_ACCOUNT_NAME": "stemail2adodev",
+    "TABLE_STORAGE_CONNECTION": "UseDevelopmentStorage=true",
     "TABLE_NAME": "ProcessedEmails",
-    
+
     "// === Gmail API Connection ===": "",
-    "GMAIL_CONNECTION_NAME": "gmail-dev",
-    "GMAIL_CONNECTION_RUNTIMEURL": "<gmail-connection-runtime-url>",
-    
+    "// Gmail OAuth는 Azure Portal에서 API Connection 생성 후 연결": "",
+    "GMAIL_CONNECTION_NAME": "gmail",
+    "GMAIL_CONNECTION_RUNTIMEURL": "<deploy-후-azure-portal에서-확인>",
+
     "// === Teams API Connection ===": "",
-    "TEAMS_CONNECTION_NAME": "teams-dev",
-    "TEAMS_CONNECTION_RUNTIMEURL": "<teams-connection-runtime-url>",
-    
-    "// === ADO API Connection ===": "",
-    "ADO_CONNECTION_NAME": "visualstudioteamservices-dev",
-    "ADO_CONNECTION_RUNTIMEURL": "<ado-connection-runtime-url>",
-    
-    "// === Azure DevOps ===": "",
-    "ADO_ORGANIZATION": "azure-mvp",
-    "ADO_PROJECT": "ZBTaskManager",
-    "ADO_PAT": "<your-ado-pat-token>",
-    
-    "// === Microsoft Teams ===": "",
+    "TEAMS_CONNECTION_NAME": "teams",
+    "TEAMS_CONNECTION_RUNTIMEURL": "<deploy-후-azure-portal에서-확인>",
     "TEAMS_TEAM_ID": "<your-teams-team-id>",
     "TEAMS_CHANNEL_ID": "<your-teams-channel-id>",
-    
+
+    "// === ADO API Connection ===": "",
+    "ADO_CONNECTION_NAME": "visualstudioteamservices",
+    "ADO_CONNECTION_RUNTIMEURL": "<deploy-후-azure-portal에서-확인>",
+    "ADO_ORGANIZATION": "azure-mvp",
+    "ADO_PROJECT": "ZBTaskManager",
+
     "// === Azure OpenAI ===": "",
+    "// 기존 리소스 사용 (rg-zb-taskman 리소스 그룹)": "",
     "AZURE_OPENAI_ENDPOINT": "https://zb-taskman.cognitiveservices.azure.com/",
     "AZURE_OPENAI_DEPLOYMENT_NAME": "gpt-4o",
-    "AZURE_OPENAI_API_VERSION": "2024-08-01-preview"
+    "AZURE_OPENAI_API_VERSION": "2024-08-01-preview",
+
+    "// === 워크플로우 설정 ===": "",
+    "Workflows.Email2ADO-Gmail.OperationOptions": "WithStatelessRunHistory"
   }
 }

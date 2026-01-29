@@ -7,8 +7,9 @@ local.settings.json
 # Azure Functions
 bin/
 obj/
-.vs/
-.vscode/
+
+# Azurite 로컬 스토리지
+.azurite/
 
 # 로그
 *.log
@@ -30,3 +31,4 @@ Thumbs.db
 # 임시 파일
 *.tmp
 *.temp
+

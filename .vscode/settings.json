@@ -1,0 +1,17 @@
+{
+  "azureFunctions.deploySubpath": "src/Email2ADO-Workflow",
+  "azureFunctions.projectLanguage": "JavaScript",
+  "azureFunctions.projectRuntime": "~4",
+  "azureLogicAppsStandard.autoRuntimeDependenciesValidation": true,
+  "azureLogicAppsStandard.showDesignerNotice": false,
+  "debug.internalConsoleOptions": "neverOpen",
+  "files.exclude": {
+    ".azurite": true,
+    "**/.git": true,
+    "**/node_modules": true
+  },
+  "editor.formatOnSave": true,
+  "[json]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  }
+}

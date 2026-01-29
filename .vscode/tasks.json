@@ -1,0 +1,57 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "func: host start",
+      "type": "shell",
+      "command": "func host start",
+      "options": {
+        "cwd": "${workspaceFolder}/src/Email2ADO-Workflow"
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": {
+          "regexp": "^.*$",
+          "file": 1,
+          "location": 2,
+          "message": 3
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^.*Azure Functions Core Tools.*$",
+          "endsPattern": "^.*Host lock lease acquired.*$"
+        }
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "azurite: start",
+      "type": "shell",
+      "command": "azurite",
+      "args": [
+        "--silent",
+        "--location", "${workspaceFolder}/.azurite",
+        "--debug", "${workspaceFolder}/.azurite/debug.log"
+      ],
+      "isBackground": true,
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "start: local dev",
+      "dependsOn": ["azurite: start", "func: host start"],
+      "dependsOrder": "sequence",
+      "group": "build"
+    }
+  ]
+}
