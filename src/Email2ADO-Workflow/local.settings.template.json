@@ -26,6 +26,8 @@
 
     "// === Gmail API Connection ===": "",
     "// Gmail OAuth는 Azure Portal에서 API Connection 생성 후 연결": "",
+    "// 인증 계정: zerobig.kim@gmail.com": "",
+    "GMAIL_ACCOUNT": "zerobig.kim@gmail.com",
     "GMAIL_CONNECTION_NAME": "gmail",
     "GMAIL_CONNECTION_RUNTIMEURL": "<deploy-후-azure-portal에서-확인>",
 

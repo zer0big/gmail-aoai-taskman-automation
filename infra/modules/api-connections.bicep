@@ -59,15 +59,16 @@ resource gmailConnection 'Microsoft.Web/connections@2016-06-01' = {
   location: location
   tags: tags
   properties: {
-    displayName: 'Gmail - Email2ADO Workflow'
+    displayName: 'Gmail - zerobig.kim@gmail.com'
     api: {
       id: subscriptionResourceId('Microsoft.Web/locations/managedApis', location, 'gmail')
       displayName: 'Gmail'
-      description: 'Gmail connector for email triggers'
+      description: 'Gmail connector for email triggers (zerobig.kim@gmail.com)'
       iconUri: 'https://connectoricons-prod.azureedge.net/releases/v1.0.1673/1.0.1673.3557/gmail/icon.png'
       brandColor: '#EA4335'
     }
     // parameterValues는 OAuth 인증 후 자동 설정됨
+    // 인증 계정: zerobig.kim@gmail.com
     parameterValues: {}
   }
 }
