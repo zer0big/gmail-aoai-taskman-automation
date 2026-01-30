@@ -1,177 +1,170 @@
 {
   "definition": {
     "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
-    "contentVersion": "2.1.0.0",
+    "contentVersion": "2.1.1.0",
     "actions": {
-      "Scope_Initialize_Variables": {
-        "type": "Scope",
+      "Initialize_MessageId": {
+        "type": "InitializeVariable",
         "runAfter": {},
-        "actions": {
-          "Initialize_MessageId": {
-            "type": "InitializeVariable",
-            "runAfter": {},
-            "inputs": {
-              "variables": [
-                {
-                  "name": "MessageId",
-                  "type": "string",
-                  "value": "@triggerBody()?['Id']"
-                }
-              ]
-            },
-            "description": "Gmail Message ID 추출"
-          },
-          "Initialize_Subject": {
-            "type": "InitializeVariable",
-            "runAfter": {
-              "Initialize_MessageId": ["Succeeded"]
-            },
-            "inputs": {
-              "variables": [
-                {
-                  "name": "Subject",
-                  "type": "string",
-                  "value": "@coalesce(triggerBody()?['Subject'], '(제목 없음)')"
-                }
-              ]
-            },
-            "description": "Gmail 이메일 제목 추출 (null 방지)"
-          },
-          "Initialize_Body": {
-            "type": "InitializeVariable",
-            "runAfter": {
-              "Initialize_Subject": ["Succeeded"]
-            },
-            "inputs": {
-              "variables": [
-                {
-                  "name": "Body",
-                  "type": "string",
-                  "value": "@{coalesce(triggerBody()?['Body'], triggerBody()?['Snippet'], '(본문 없음)')}"
-                }
-              ]
-            },
-            "description": "Gmail 본문 추출 (Body 또는 Snippet)"
-          },
-          "Initialize_ReceivedTimeKST": {
-            "type": "InitializeVariable",
-            "runAfter": {
-              "Initialize_Body": ["Succeeded"]
-            },
-            "inputs": {
-              "variables": [
-                {
-                  "name": "ReceivedTimeKST",
-                  "type": "string",
-                  "value": "@{addHours(coalesce(triggerBody()?['DateTimeReceived'], utcNow()), 9)}"
-                }
-              ]
-            },
-            "description": "수신 시간 KST 변환 (+9시간)"
-          },
-          "Initialize_SenderEmail": {
-            "type": "InitializeVariable",
-            "runAfter": {
-              "Initialize_ReceivedTimeKST": ["Succeeded"]
-            },
-            "inputs": {
-              "variables": [
-                {
-                  "name": "SenderEmail",
-                  "type": "string",
-                  "value": "@coalesce(triggerBody()?['From'], 'unknown@unknown.com')"
-                }
-              ]
-            },
-            "description": "Gmail 발신자 이메일 추출"
-          },
-          "Initialize_RecipientEmail": {
-            "type": "InitializeVariable",
-            "runAfter": {
-              "Initialize_SenderEmail": ["Succeeded"]
-            },
-            "inputs": {
-              "variables": [
-                {
-                  "name": "RecipientEmail",
-                  "type": "string",
-                  "value": "@{if(empty(triggerBody()?['Cc']), coalesce(triggerBody()?['To'], ''), concat(coalesce(triggerBody()?['To'], ''), '; ', triggerBody()?['Cc']))}"
-                }
-              ]
-            },
-            "description": "수신자 목록 (To + Cc)"
-          },
-          "Initialize_AIAnalysisResult": {
-            "type": "InitializeVariable",
-            "runAfter": {
-              "Initialize_RecipientEmail": ["Succeeded"]
-            },
-            "inputs": {
-              "variables": [
-                {
-                  "name": "AIAnalysisResult",
-                  "type": "string",
-                  "value": ""
-                }
-              ]
-            },
-            "description": "AI 분석 결과 저장용 변수"
-          },
-          "Initialize_Tags": {
-            "type": "InitializeVariable",
-            "runAfter": {
-              "Initialize_AIAnalysisResult": ["Succeeded"]
-            },
-            "inputs": {
-              "variables": [
-                {
-                  "name": "Tags",
-                  "type": "string",
-                  "value": "@{if(or(contains(variables('RecipientEmail'), '@'), contains(variables('RecipientEmail'), ';')), 'Email2ADO; Gmail', 'Email2ADO')}"
-                }
-              ]
-            },
-            "description": "Work Item 태그 설정"
-          },
-          "Initialize_WorkItemId": {
-            "type": "InitializeVariable",
-            "runAfter": {
-              "Initialize_Tags": ["Succeeded"]
-            },
-            "inputs": {
-              "variables": [
-                {
-                  "name": "WorkItemId",
-                  "type": "integer",
-                  "value": 0
-                }
-              ]
-            },
-            "description": "생성된 Work Item ID 저장용"
-          },
-          "Initialize_ErrorMessage": {
-            "type": "InitializeVariable",
-            "runAfter": {
-              "Initialize_WorkItemId": ["Succeeded"]
-            },
-            "inputs": {
-              "variables": [
-                {
-                  "name": "ErrorMessage",
-                  "type": "string",
-                  "value": ""
-                }
-              ]
-            },
-            "description": "에러 메시지 저장용 (Operational Excellence - 가시성)"
-          }
+        "inputs": {
+          "variables": [
+            {
+              "name": "MessageId",
+              "type": "string",
+              "value": "@triggerBody()?['Id']"
+            }
+          ]
         },
-        "description": "🔧 변수 초기화 Scope - null 안전 처리 적용"
+        "description": "Gmail Message ID 추출"
+      },
+      "Initialize_Subject": {
+        "type": "InitializeVariable",
+        "runAfter": {
+          "Initialize_MessageId": ["Succeeded"]
+        },
+        "inputs": {
+          "variables": [
+            {
+              "name": "Subject",
+              "type": "string",
+              "value": "@coalesce(triggerBody()?['Subject'], '(제목 없음)')"
+            }
+          ]
+        },
+        "description": "Gmail 이메일 제목 추출 (null 방지)"
+      },
+      "Initialize_Body": {
+        "type": "InitializeVariable",
+        "runAfter": {
+          "Initialize_Subject": ["Succeeded"]
+        },
+        "inputs": {
+          "variables": [
+            {
+              "name": "Body",
+              "type": "string",
+              "value": "@{coalesce(triggerBody()?['Body'], triggerBody()?['Snippet'], '(본문 없음)')}"
+            }
+          ]
+        },
+        "description": "Gmail 본문 추출 (Body 또는 Snippet)"
+      },
+      "Initialize_ReceivedTimeKST": {
+        "type": "InitializeVariable",
+        "runAfter": {
+          "Initialize_Body": ["Succeeded"]
+        },
+        "inputs": {
+          "variables": [
+            {
+              "name": "ReceivedTimeKST",
+              "type": "string",
+              "value": "@{addHours(coalesce(triggerBody()?['DateTimeReceived'], utcNow()), 9)}"
+            }
+          ]
+        },
+        "description": "수신 시간 KST 변환 (+9시간)"
+      },
+      "Initialize_SenderEmail": {
+        "type": "InitializeVariable",
+        "runAfter": {
+          "Initialize_ReceivedTimeKST": ["Succeeded"]
+        },
+        "inputs": {
+          "variables": [
+            {
+              "name": "SenderEmail",
+              "type": "string",
+              "value": "@coalesce(triggerBody()?['From'], 'unknown@unknown.com')"
+            }
+          ]
+        },
+        "description": "Gmail 발신자 이메일 추출"
+      },
+      "Initialize_RecipientEmail": {
+        "type": "InitializeVariable",
+        "runAfter": {
+          "Initialize_SenderEmail": ["Succeeded"]
+        },
+        "inputs": {
+          "variables": [
+            {
+              "name": "RecipientEmail",
+              "type": "string",
+              "value": "@{if(empty(triggerBody()?['Cc']), coalesce(triggerBody()?['To'], ''), concat(coalesce(triggerBody()?['To'], ''), '; ', triggerBody()?['Cc']))}"
+            }
+          ]
+        },
+        "description": "수신자 목록 (To + Cc)"
+      },
+      "Initialize_AIAnalysisResult": {
+        "type": "InitializeVariable",
+        "runAfter": {
+          "Initialize_RecipientEmail": ["Succeeded"]
+        },
+        "inputs": {
+          "variables": [
+            {
+              "name": "AIAnalysisResult",
+              "type": "string",
+              "value": ""
+            }
+          ]
+        },
+        "description": "AI 분석 결과 저장용 변수"
+      },
+      "Initialize_Tags": {
+        "type": "InitializeVariable",
+        "runAfter": {
+          "Initialize_AIAnalysisResult": ["Succeeded"]
+        },
+        "inputs": {
+          "variables": [
+            {
+              "name": "Tags",
+              "type": "string",
+              "value": "@{if(or(contains(variables('RecipientEmail'), '@'), contains(variables('RecipientEmail'), ';')), 'Email2ADO; Gmail', 'Email2ADO')}"
+            }
+          ]
+        },
+        "description": "Work Item 태그 설정"
+      },
+      "Initialize_WorkItemId": {
+        "type": "InitializeVariable",
+        "runAfter": {
+          "Initialize_Tags": ["Succeeded"]
+        },
+        "inputs": {
+          "variables": [
+            {
+              "name": "WorkItemId",
+              "type": "integer",
+              "value": 0
+            }
+          ]
+        },
+        "description": "생성된 Work Item ID 저장용"
+      },
+      "Initialize_ErrorMessage": {
+        "type": "InitializeVariable",
+        "runAfter": {
+          "Initialize_WorkItemId": ["Succeeded"]
+        },
+        "inputs": {
+          "variables": [
+            {
+              "name": "ErrorMessage",
+              "type": "string",
+              "value": ""
+            }
+          ]
+        },
+        "description": "에러 메시지 저장용 (Operational Excellence - 가시성)"
       },
       "Scope_Duplicate_Check": {
         "type": "Scope",
         "runAfter": {
-          "Scope_Initialize_Variables": ["Succeeded"]
+          "Initialize_ErrorMessage": ["Succeeded"]
         },
         "actions": {
           "Check_MessageId_In_TableStorage": {

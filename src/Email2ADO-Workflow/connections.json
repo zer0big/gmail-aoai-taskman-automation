@@ -8,7 +8,9 @@
         "id": "/subscriptions/@appsetting('AZURE_SUBSCRIPTION_ID')/resourceGroups/@appsetting('AZURE_RESOURCE_GROUP')/providers/Microsoft.Web/connections/@appsetting('GMAIL_CONNECTION_NAME')"
       },
       "authentication": {
-        "type": "ManagedServiceIdentity"
+        "type": "Raw",
+        "scheme": "Key",
+        "parameter": "@appsetting('gmail_connectionKey')"
       }
     },
     "teams": {
@@ -19,7 +21,9 @@
         "id": "/subscriptions/@appsetting('AZURE_SUBSCRIPTION_ID')/resourceGroups/@appsetting('AZURE_RESOURCE_GROUP')/providers/Microsoft.Web/connections/@appsetting('TEAMS_CONNECTION_NAME')"
       },
       "authentication": {
-        "type": "ManagedServiceIdentity"
+        "type": "Raw",
+        "scheme": "Key",
+        "parameter": "@appsetting('teams_connectionKey')"
       }
     },
     "visualstudioteamservices": {
@@ -30,14 +34,16 @@
         "id": "/subscriptions/@appsetting('AZURE_SUBSCRIPTION_ID')/resourceGroups/@appsetting('AZURE_RESOURCE_GROUP')/providers/Microsoft.Web/connections/@appsetting('ADO_CONNECTION_NAME')"
       },
       "authentication": {
-        "type": "ManagedServiceIdentity"
+        "type": "Raw",
+        "scheme": "Key",
+        "parameter": "@appsetting('vsts_connectionKey')"
       }
     }
   },
   "serviceProviderConnections": {
     "azureOpenAI": {
       "parameterValues": {
-        "endpoint": "@appsetting('AZURE_OPENAI_ENDPOINT')",
+        "openAIEndpoint": "@appsetting('AZURE_OPENAI_ENDPOINT')",
         "apiVersion": "@appsetting('AZURE_OPENAI_API_VERSION')"
       },
       "serviceProvider": {

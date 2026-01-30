@@ -1,0 +1,642 @@
+{
+  "definition": {
+    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+    "contentVersion": "2.3.0.0",
+    "actions": {
+      "Initialize_MessageId": {
+        "type": "InitializeVariable",
+        "runAfter": {},
+        "inputs": {
+          "variables": [
+            {
+              "name": "MessageId",
+              "type": "string",
+              "value": "@{coalesce(triggerBody()?['messageId'], guid())}"
+            }
+          ]
+        },
+        "description": "Gmail Message ID 추출"
+      },
+      "Initialize_Subject": {
+        "type": "InitializeVariable",
+        "runAfter": {
+          "Initialize_MessageId": ["Succeeded"]
+        },
+        "inputs": {
+          "variables": [
+            {
+              "name": "Subject",
+              "type": "string",
+              "value": "@{coalesce(triggerBody()?['subject'], '(제목 없음)')}"
+            }
+          ]
+        },
+        "description": "이메일 제목 추출"
+      },
+      "Initialize_Body": {
+        "type": "InitializeVariable",
+        "runAfter": {
+          "Initialize_Subject": ["Succeeded"]
+        },
+        "inputs": {
+          "variables": [
+            {
+              "name": "Body",
+              "type": "string",
+              "value": "@{coalesce(triggerBody()?['body'], '(본문 없음)')}"
+            }
+          ]
+        },
+        "description": "이메일 본문 추출"
+      },
+      "Initialize_ReceivedTimeKST": {
+        "type": "InitializeVariable",
+        "runAfter": {
+          "Initialize_Body": ["Succeeded"]
+        },
+        "inputs": {
+          "variables": [
+            {
+              "name": "ReceivedTimeKST",
+              "type": "string",
+              "value": "@{addHours(coalesce(triggerBody()?['receivedTime'], utcNow()), 9)}"
+            }
+          ]
+        },
+        "description": "수신 시간 KST 변환"
+      },
+      "Initialize_SenderEmail": {
+        "type": "InitializeVariable",
+        "runAfter": {
+          "Initialize_ReceivedTimeKST": ["Succeeded"]
+        },
+        "inputs": {
+          "variables": [
+            {
+              "name": "SenderEmail",
+              "type": "string",
+              "value": "@{coalesce(triggerBody()?['from'], 'unknown@unknown.com')}"
+            }
+          ]
+        },
+        "description": "발신자 이메일 추출"
+      },
+      "Initialize_RecipientEmail": {
+        "type": "InitializeVariable",
+        "runAfter": {
+          "Initialize_SenderEmail": ["Succeeded"]
+        },
+        "inputs": {
+          "variables": [
+            {
+              "name": "RecipientEmail",
+              "type": "string",
+              "value": "@{coalesce(triggerBody()?['to'], '')}"
+            }
+          ]
+        },
+        "description": "수신자 이메일"
+      },
+      "Initialize_AIAnalysisResult": {
+        "type": "InitializeVariable",
+        "runAfter": {
+          "Initialize_RecipientEmail": ["Succeeded"]
+        },
+        "inputs": {
+          "variables": [
+            {
+              "name": "AIAnalysisResult",
+              "type": "string",
+              "value": ""
+            }
+          ]
+        },
+        "description": "AI 분석 결과 저장용"
+      },
+      "Initialize_Tags": {
+        "type": "InitializeVariable",
+        "runAfter": {
+          "Initialize_AIAnalysisResult": ["Succeeded"]
+        },
+        "inputs": {
+          "variables": [
+            {
+              "name": "Tags",
+              "type": "string",
+              "value": "Email2ADO; Gmail; HTTP"
+            }
+          ]
+        },
+        "description": "Work Item 태그"
+      },
+      "Initialize_WorkItemId": {
+        "type": "InitializeVariable",
+        "runAfter": {
+          "Initialize_Tags": ["Succeeded"]
+        },
+        "inputs": {
+          "variables": [
+            {
+              "name": "WorkItemId",
+              "type": "integer",
+              "value": 0
+            }
+          ]
+        },
+        "description": "생성된 Work Item ID"
+      },
+      "Initialize_ErrorMessage": {
+        "type": "InitializeVariable",
+        "runAfter": {
+          "Initialize_WorkItemId": ["Succeeded"]
+        },
+        "inputs": {
+          "variables": [
+            {
+              "name": "ErrorMessage",
+              "type": "string",
+              "value": ""
+            }
+          ]
+        },
+        "description": "에러 메시지 저장용"
+      },
+      "Scope_Duplicate_Check": {
+        "type": "Scope",
+        "runAfter": {
+          "Initialize_ErrorMessage": ["Succeeded"]
+        },
+        "actions": {
+          "Check_MessageId_In_TableStorage": {
+            "type": "Http",
+            "runAfter": {},
+            "inputs": {
+              "method": "GET",
+              "uri": "https://@{appsetting('STORAGE_ACCOUNT_NAME')}.table.core.windows.net/ProcessedEmails(PartitionKey='@{formatDateTime(utcNow(), 'yyyy-MM')}',RowKey='@{encodeURIComponent(variables('MessageId'))}')",
+              "headers": {
+                "x-ms-version": "2020-12-06",
+                "Accept": "application/json;odata=nometadata"
+              },
+              "authentication": {
+                "type": "ManagedServiceIdentity",
+                "audience": "https://storage.azure.com/"
+              },
+              "retryPolicy": {
+                "type": "exponential",
+                "count": 3,
+                "interval": "PT5S",
+                "maximumInterval": "PT30S",
+                "minimumInterval": "PT5S"
+              }
+            },
+            "runtimeConfiguration": {
+              "contentTransfer": {
+                "transferMode": "Chunked"
+              }
+            },
+            "description": "Table Storage에서 중복 메일 확인"
+          },
+          "Condition_Is_Duplicate": {
+            "type": "If",
+            "runAfter": {
+              "Check_MessageId_In_TableStorage": ["Succeeded", "Failed"]
+            },
+            "expression": {
+              "and": [
+                {
+                  "equals": [
+                    "@outputs('Check_MessageId_In_TableStorage')['statusCode']",
+                    200
+                  ]
+                }
+              ]
+            },
+            "actions": {
+              "Response_Duplicate": {
+                "type": "Response",
+                "runAfter": {},
+                "inputs": {
+                  "statusCode": 200,
+                  "headers": {
+                    "Content-Type": "application/json"
+                  },
+                  "body": {
+                    "status": "skipped",
+                    "reason": "duplicate",
+                    "messageId": "@variables('MessageId')"
+                  }
+                },
+                "description": "중복 메일 응답"
+              },
+              "Terminate_Duplicate": {
+                "type": "Terminate",
+                "runAfter": {
+                  "Response_Duplicate": ["Succeeded"]
+                },
+                "inputs": {
+                  "runStatus": "Succeeded"
+                },
+                "description": "중복 메일 정상 종료"
+              }
+            },
+            "else": {
+              "actions": {}
+            },
+            "description": "중복 여부 분기"
+          }
+        },
+        "description": "🔍 중복 체크 Scope"
+      },
+      "Scope_Core_Processing": {
+        "type": "Scope",
+        "runAfter": {
+          "Scope_Duplicate_Check": ["Succeeded"]
+        },
+        "actions": {
+          "Insert_MessageId_To_TableStorage": {
+            "type": "Http",
+            "runAfter": {},
+            "inputs": {
+              "method": "POST",
+              "uri": "https://@{appsetting('STORAGE_ACCOUNT_NAME')}.table.core.windows.net/ProcessedEmails",
+              "headers": {
+                "Content-Type": "application/json",
+                "Accept": "application/json;odata=nometadata",
+                "x-ms-version": "2020-12-06"
+              },
+              "body": {
+                "PartitionKey": "@{formatDateTime(utcNow(), 'yyyy-MM')}",
+                "RowKey": "@{variables('MessageId')}",
+                "Subject": "@{variables('Subject')}",
+                "ReceivedTimeKST": "@{variables('ReceivedTimeKST')}",
+                "SenderEmail": "@{variables('SenderEmail')}",
+                "ProcessedTime": "@{utcNow()}",
+                "Source": "Gmail-HTTP",
+                "Status": "Processing"
+              },
+              "authentication": {
+                "type": "ManagedServiceIdentity",
+                "audience": "https://storage.azure.com/"
+              },
+              "retryPolicy": {
+                "type": "exponential",
+                "count": 3,
+                "interval": "PT5S",
+                "maximumInterval": "PT30S",
+                "minimumInterval": "PT5S"
+              }
+            },
+            "runtimeConfiguration": {
+              "contentTransfer": {
+                "transferMode": "Chunked"
+              }
+            },
+            "description": "메일 ID 등록"
+          },
+          "Analyze_Email_With_AI": {
+            "type": "Http",
+            "runAfter": {
+              "Insert_MessageId_To_TableStorage": ["Succeeded"]
+            },
+            "inputs": {
+              "method": "POST",
+              "uri": "@{appsetting('AZURE_OPENAI_ENDPOINT')}openai/deployments/@{appsetting('AZURE_OPENAI_DEPLOYMENT_NAME')}/chat/completions?api-version=@{appsetting('AZURE_OPENAI_API_VERSION')}",
+              "headers": {
+                "Content-Type": "application/json"
+              },
+              "body": {
+                "messages": [
+                  {
+                    "role": "system",
+                    "content": "당신은 기업 이메일 분석 전문가입니다. 수신된 이메일을 분석하여 다음 형식으로 응답해주세요:\n\n## 📜 요약\n(메일 핵심 내용을 2-3문장으로 요약)\n\n## 💡 인사이트\n(이 메일이 의미하는 바, 중요도, 관련 맥락 분석)\n\n## ✔ 액션 아이템\n(수신자가 취해야 할 구체적인 조치 사항을 번호 목록으로)\n\n한글로 응답하고, 간결하면서도 명확하게 작성하세요."
+                  },
+                  {
+                    "role": "user",
+                    "content": "다음 이메일을 분석해주세요:\n\n발신자: @{variables('SenderEmail')}\n제목: @{variables('Subject')}\n\n본문:\n@{variables('Body')}"
+                  }
+                ],
+                "temperature": 0.3,
+                "max_tokens": 1000
+              },
+              "authentication": {
+                "type": "ManagedServiceIdentity",
+                "audience": "https://cognitiveservices.azure.com"
+              },
+              "retryPolicy": {
+                "type": "exponential",
+                "count": 3,
+                "interval": "PT5S",
+                "maximumInterval": "PT30S",
+                "minimumInterval": "PT5S"
+              }
+            },
+            "runtimeConfiguration": {
+              "contentTransfer": {
+                "transferMode": "Chunked"
+              }
+            },
+            "description": "Azure OpenAI (GPT-4o) 이메일 분석 - HTTP + MSI"
+          },
+          "Set_AI_Analysis_Result": {
+            "type": "SetVariable",
+            "runAfter": {
+              "Analyze_Email_With_AI": ["Succeeded"]
+            },
+            "inputs": {
+              "name": "AIAnalysisResult",
+              "value": "@{coalesce(body('Analyze_Email_With_AI')?['choices']?[0]?['message']?['content'], '(AI 분석 결과 없음)')}"
+            },
+            "description": "AI 분석 결과 저장"
+          },
+          "Get_ADO_PAT_From_KeyVault": {
+            "type": "Http",
+            "runAfter": {
+              "Set_AI_Analysis_Result": ["Succeeded"]
+            },
+            "inputs": {
+              "method": "GET",
+              "uri": "https://@{appsetting('KEY_VAULT_NAME')}.vault.azure.net/secrets/ado-pat?api-version=7.4",
+              "authentication": {
+                "type": "ManagedServiceIdentity",
+                "audience": "https://vault.azure.net"
+              },
+              "retryPolicy": {
+                "type": "exponential",
+                "count": 3,
+                "interval": "PT5S",
+                "maximumInterval": "PT30S",
+                "minimumInterval": "PT5S"
+              }
+            },
+            "runtimeConfiguration": {
+              "secureData": {
+                "properties": ["outputs"]
+              }
+            },
+            "description": "Key Vault에서 ADO PAT 런타임 조회 (MSI)"
+          },
+          "Create_ADO_WorkItem_HTTP": {
+            "type": "Http",
+            "runAfter": {
+              "Get_ADO_PAT_From_KeyVault": ["Succeeded"]
+            },
+            "inputs": {
+              "method": "POST",
+              "uri": "https://dev.azure.com/@{appsetting('ADO_ORGANIZATION')}/@{appsetting('ADO_PROJECT')}/_apis/wit/workitems/$Issue?api-version=7.1",
+              "headers": {
+                "Content-Type": "application/json-patch+json",
+                "Authorization": "Basic @{base64(concat(':', body('Get_ADO_PAT_From_KeyVault')?['value']))}"
+              },
+              "body": [
+                {
+                  "op": "add",
+                  "path": "/fields/System.Title",
+                  "value": "@{variables('Subject')}"
+                },
+                {
+                  "op": "add",
+                  "path": "/fields/System.Description",
+                  "value": "<h2>🤖 AI 분석 결과</h2><div style='background-color:#f0f7ff;padding:15px;border-radius:8px;margin-bottom:20px;border-left:4px solid #0078d4;'>@{replace(replace(variables('AIAnalysisResult'), '\n', '<br/>'), '## ', '<h4 style=\"color:#0078d4;margin-top:10px;\">')}</div><hr style='border:1px solid #ddd;margin:20px 0;'/><h2>📧 원본 메일 정보</h2><table style='width:100%;border-collapse:collapse;margin-bottom:15px;'><tr style='background:#f5f5f5;'><td style='padding:8px;border:1px solid #ddd;width:100px;'><strong>발신자</strong></td><td style='padding:8px;border:1px solid #ddd;'>@{variables('SenderEmail')}</td></tr><tr><td style='padding:8px;border:1px solid #ddd;'><strong>수신자</strong></td><td style='padding:8px;border:1px solid #ddd;'>@{variables('RecipientEmail')}</td></tr><tr style='background:#f5f5f5;'><td style='padding:8px;border:1px solid #ddd;'><strong>수신 시간</strong></td><td style='padding:8px;border:1px solid #ddd;'>@{formatDateTime(variables('ReceivedTimeKST'), 'yyyy-MM-dd HH:mm:ss')} (KST)</td></tr><tr><td style='padding:8px;border:1px solid #ddd;'><strong>소스</strong></td><td style='padding:8px;border:1px solid #ddd;'>📧 Gmail (HTTP)</td></tr></table><h3>📝 본문 내용</h3><div style='background:#fafafa;padding:15px;border-radius:8px;border:1px solid #eee;white-space:pre-wrap;font-family:inherit;'>@{first(split(variables('Body'), '________________________________'))}</div>"
+                },
+                {
+                  "op": "add",
+                  "path": "/fields/System.Tags",
+                  "value": "@{variables('Tags')}"
+                }
+              ],
+              "retryPolicy": {
+                "type": "exponential",
+                "count": 3,
+                "interval": "PT10S",
+                "maximumInterval": "PT1M",
+                "minimumInterval": "PT5S"
+              }
+            },
+            "runtimeConfiguration": {
+              "secureData": {
+                "properties": ["inputs"]
+              }
+            },
+            "description": "ADO Issue Work Item 생성 (HTTP + Key Vault PAT)"
+          },
+          "Set_WorkItemId": {
+            "type": "SetVariable",
+            "runAfter": {
+              "Create_ADO_WorkItem_HTTP": ["Succeeded"]
+            },
+            "inputs": {
+              "name": "WorkItemId",
+              "value": "@body('Create_ADO_WorkItem_HTTP')?['id']"
+            },
+            "description": "생성된 Work Item ID 저장"
+          },
+          "Send_Teams_Notification_HTTP": {
+            "type": "Http",
+            "runAfter": {
+              "Set_WorkItemId": ["Succeeded"]
+            },
+            "inputs": {
+              "method": "POST",
+              "uri": "@{appsetting('TEAMS_WORKFLOW_URL')}",
+              "headers": {
+                "Content-Type": "application/json"
+              },
+              "body": {
+                "type": "message",
+                "attachments": [
+                  {
+                    "contentType": "application/vnd.microsoft.card.adaptive",
+                    "content": {
+                      "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                      "type": "AdaptiveCard",
+                      "version": "1.4",
+                      "body": [
+                        {
+                          "type": "TextBlock",
+                          "size": "Large",
+                          "weight": "Bolder",
+                          "text": "✅ 새 Work Item 생성됨",
+                          "color": "Good"
+                        },
+                        {
+                          "type": "FactSet",
+                          "facts": [
+                            { "title": "📧 소스", "value": "Gmail (HTTP)" },
+                            { "title": "🆔 Work Item", "value": "#@{variables('WorkItemId')}" },
+                            { "title": "🏷️ 태그", "value": "@{variables('Tags')}" },
+                            { "title": "📋 제목", "value": "@{variables('Subject')}" },
+                            { "title": "👤 발신자", "value": "@{variables('SenderEmail')}" },
+                            { "title": "🕐 수신 시간", "value": "@{variables('ReceivedTimeKST')}" }
+                          ]
+                        },
+                        {
+                          "type": "TextBlock",
+                          "text": "🤖 AI 요약",
+                          "weight": "Bolder",
+                          "spacing": "Medium"
+                        },
+                        {
+                          "type": "TextBlock",
+                          "text": "@{take(variables('AIAnalysisResult'), 500)}",
+                          "wrap": true
+                        }
+                      ],
+                      "actions": [
+                        {
+                          "type": "Action.OpenUrl",
+                          "title": "Work Item 보기",
+                          "url": "https://dev.azure.com/@{appsetting('ADO_ORGANIZATION')}/@{appsetting('ADO_PROJECT')}/_workitems/edit/@{variables('WorkItemId')}"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              "retryPolicy": {
+                "type": "fixed",
+                "count": 2,
+                "interval": "PT10S"
+              }
+            },
+            "description": "Teams 채널 알림 (Power Automate Workflow)"
+          },
+          "Update_TableStorage_Status_Complete": {
+            "type": "Http",
+            "runAfter": {
+              "Send_Teams_Notification_HTTP": ["Succeeded", "Failed", "Skipped"]
+            },
+            "inputs": {
+              "method": "PUT",
+              "uri": "https://@{appsetting('STORAGE_ACCOUNT_NAME')}.table.core.windows.net/ProcessedEmails(PartitionKey='@{formatDateTime(utcNow(), 'yyyy-MM')}',RowKey='@{encodeURIComponent(variables('MessageId'))}')",
+              "headers": {
+                "Content-Type": "application/json",
+                "Accept": "application/json;odata=nometadata",
+                "x-ms-version": "2020-12-06",
+                "If-Match": "*"
+              },
+              "body": {
+                "PartitionKey": "@{formatDateTime(utcNow(), 'yyyy-MM')}",
+                "RowKey": "@{variables('MessageId')}",
+                "Subject": "@{variables('Subject')}",
+                "ReceivedTimeKST": "@{variables('ReceivedTimeKST')}",
+                "SenderEmail": "@{variables('SenderEmail')}",
+                "ProcessedTime": "@{utcNow()}",
+                "Source": "Gmail-HTTP",
+                "Status": "Completed",
+                "WorkItemId": "@{variables('WorkItemId')}"
+              },
+              "authentication": {
+                "type": "ManagedServiceIdentity",
+                "audience": "https://storage.azure.com/"
+              }
+            },
+            "runtimeConfiguration": {
+              "contentTransfer": {
+                "transferMode": "Chunked"
+              }
+            },
+            "description": "처리 완료 상태 업데이트"
+          }
+        },
+        "description": "⚙️ 핵심 처리 Scope"
+      },
+      "Response_Success": {
+        "type": "Response",
+        "runAfter": {
+          "Scope_Core_Processing": ["Succeeded"]
+        },
+        "inputs": {
+          "statusCode": 200,
+          "headers": {
+            "Content-Type": "application/json"
+          },
+          "body": {
+            "status": "success",
+            "workItemId": "@variables('WorkItemId')",
+            "messageId": "@variables('MessageId')"
+          }
+        },
+        "description": "성공 응답"
+      },
+      "Scope_Error_Handler": {
+        "type": "Scope",
+        "runAfter": {
+          "Scope_Core_Processing": ["Failed", "TimedOut"]
+        },
+        "actions": {
+          "Set_Error_Message": {
+            "type": "SetVariable",
+            "runAfter": {},
+            "inputs": {
+              "name": "ErrorMessage",
+              "value": "@{coalesce(result('Scope_Core_Processing')?[0]?['error']?['message'], 'Unknown error occurred')}"
+            },
+            "description": "에러 메시지 캡처"
+          },
+          "Response_Error": {
+            "type": "Response",
+            "runAfter": {
+              "Set_Error_Message": ["Succeeded"]
+            },
+            "inputs": {
+              "statusCode": 500,
+              "headers": {
+                "Content-Type": "application/json"
+              },
+              "body": {
+                "status": "error",
+                "error": "@variables('ErrorMessage')",
+                "messageId": "@variables('MessageId')"
+              }
+            },
+            "description": "에러 응답"
+          }
+        },
+        "description": "🚨 에러 핸들러 Scope"
+      }
+    },
+    "outputs": {},
+    "triggers": {
+      "HTTP_Trigger": {
+        "type": "Request",
+        "kind": "Http",
+        "inputs": {
+          "method": "POST",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "messageId": {
+                "type": "string",
+                "description": "Gmail Message ID"
+              },
+              "subject": {
+                "type": "string",
+                "description": "Email subject"
+              },
+              "body": {
+                "type": "string",
+                "description": "Email body content"
+              },
+              "from": {
+                "type": "string",
+                "description": "Sender email address"
+              },
+              "to": {
+                "type": "string",
+                "description": "Recipient email address"
+              },
+              "receivedTime": {
+                "type": "string",
+                "description": "Email received time (ISO 8601)"
+              }
+            },
+            "required": ["subject", "body", "from"]
+          }
+        },
+        "description": "HTTP POST 트리거 - Power Automate에서 호출"
+      }
+    },
+    "parameters": {}
+  },
+  "kind": "Stateful"
+}

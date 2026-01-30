@@ -47,7 +47,8 @@
 
     "// === Azure OpenAI ===": "",
     "// 기존 리소스 사용 (rg-zb-taskman 리소스 그룹)": "",
-    "AZURE_OPENAI_ENDPOINT": "https://zb-taskman.openai.azure.com/",
+    "// MSI 인증 시 cognitiveservices.azure.com 엔드포인트 사용": "",
+    "AZURE_OPENAI_ENDPOINT": "https://zb-taskman.cognitiveservices.azure.com/",
     "AZURE_OPENAI_DEPLOYMENT_NAME": "gpt-4o",
     "AZURE_OPENAI_API_VERSION": "2024-06-01",
 

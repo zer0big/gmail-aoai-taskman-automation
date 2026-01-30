@@ -59,13 +59,17 @@
 
 > **목표**: 데이터와 시스템을 위협으로부터 보호
 
+#### 보안 점수: 9/10 (v2.3.0 기준)
+
 #### 적용 사항
 
 | 항목 | 구현 내용 | 위치 |
 |------|----------|------|
 | **Managed Identity** | Logic App MSI로 Azure 리소스 접근 | `logic-app.bicep` |
 | **Key Vault** | ADO PAT 등 민감 정보 보안 저장 | `key-vault.bicep` |
-| **Key Vault Reference** | App Settings에서 `@Microsoft.KeyVault(...)` 참조 | `logic-app.bicep` |
+| **Key Vault 런타임 조회** | 워크플로우 실행 시 MSI로 Key Vault에서 PAT 조회 | `workflow.json` |
+| **Easy Auth** | HTTP Trigger에 Microsoft Entra ID 인증 적용 | Azure Portal |
+| **secureData** | 민감 입출력 데이터 로그 마스킹 | `workflow.json` |
 | **HTTPS 전용** | 모든 통신 TLS 1.2+ 강제 | `storage.bicep` |
 | **OAuth 2.0** | Gmail, Teams, ADO 커넥터 OAuth 인증 | `api-connections.bicep` |
 | **V1 Connection + MSI** | API Connection에 Logic App MSI로 접근 (Contributor 역할) | `api-connections.bicep` |
@@ -193,15 +197,64 @@ Scope_Notification           Scope_Error_Handler
 └─────────────┘     └─────────────┘     └─────────────┘
 ```
 
+### Easy Auth (v2.3.0+)
+
+HTTP Trigger 워크플로우에 Microsoft Entra ID 인증이 적용되어 있습니다.
+
+```
+┌─────────────┐     Bearer Token     ┌─────────────────┐
+│  External   │─────────────────────▶│  Easy Auth      │
+│  Caller     │                      │  (Entra ID)     │
+└─────────────┘                      └────────┬────────┘
+                                              │ 인증 성공
+                                              ▼
+                                     ┌─────────────────┐
+                                     │  Email2ADO-HTTP │
+                                     │  Workflow       │
+                                     └─────────────────┘
+```
+
+- **App Registration**: Email2ADO-HTTP-Auth
+- **Client ID**: c454a3ed-f41d-4180-82d0-4ab0704fc65c
+- **Audience**: api://c454a3ed-f41d-4180-82d0-4ab0704fc65c
+
+### Key Vault 런타임 조회 (v2.3.0+)
+
+ADO PAT는 App Settings Key Vault Reference가 아닌, 워크플로우 실행 시점에 MSI로 직접 Key Vault에서 조회합니다.
+
+```json
+{
+  "Get_ADO_PAT_From_KeyVault": {
+    "type": "Http",
+    "inputs": {
+      "uri": "https://kv-zbtask-prod.vault.azure.net/secrets/ado-pat?api-version=7.4",
+      "authentication": {
+        "type": "ManagedServiceIdentity",
+        "audience": "https://vault.azure.net"
+      }
+    },
+    "runtimeConfiguration": {
+      "secureData": { "properties": ["outputs"] }
+    }
+  }
+}
+```
+
+이 방식의 장점:
+- App Settings에 PAT 노출 안됨
+- Key Vault 감사 로그에 접근 기록 남음
+- 런타임 시 최신 PAT 사용 (Secret 교체 시 재배포 불필요)
+
 ### 민감 정보 관리
 
 | 항목 | 저장 위치 | 접근 방식 | 비고 |
 |------|----------|----------|------|
 | ADO Work Item 생성 | API Connection (OAuth) | MSI + OAuth | PAT 불필요 |
-| ADO 필드 업데이트 | **Key Vault** (ado-pat) | `@Microsoft.KeyVault(...)` | VSTS 커넥터 제약 우회용 |
+| ADO 필드 업데이트 | **Key Vault** (ado-pat) | MSI 런타임 조회 | v2.3.0+ |
 | Storage Key | App Settings | 연결 문자열 | MSI 전환 권장 |
 | OAuth Tokens | API Connection | 자동 관리 | - |
 | OpenAI 인증 | MSI | Cognitive Services User | API Key 불필요 |
+| HTTP Trigger 인증 | Easy Auth | Entra ID Bearer Token | v2.3.0+ |
 
 ## 📚 참조 문서
 
@@ -214,6 +267,8 @@ Scope_Notification           Scope_Error_Handler
 
 | 버전 | 날짜 | 작성자 | 내용 |
 |------|------|--------|------|
-| 2.2.0 | 2026-01-30 | azure-mvp | Key Vault 통합 (ADO PAT 보안 저장) |
+| 2.3.0 | 2026-01-30 | azure-mvp | Phase 9: Key Vault 런타임 조회, Easy Auth, secureData 마스킹 |
+| 2.2.1 | 2026-01-30 | azure-mvp | Phase 8: Email2ADO-HTTP 워크플로우, Power Automate Workflow 연동 |
+| 2.2.0 | 2026-01-30 | azure-mvp | Phase 7: Key Vault 통합 (ADO PAT 보안 저장) |
 | 2.1.0 | 2026-01-29 | azure-mvp | WAF 5 Pillars 기반 재설계 |
 | 2.0.0 | 2026-01-29 | azure-mvp | Gmail 트리거로 전환 |

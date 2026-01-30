@@ -2,8 +2,8 @@
 // 📋 main.bicep - Gmail 기반 이메일 자동화 시스템 메인 배포 파일
 // ============================================================================
 // 목적: Azure Logic Apps Standard 기반 이메일 자동화 시스템의 모든 리소스 배포
-// 버전: v2.0.0
-// 작성일: 2026-01-29
+// 버전: v2.3.0
+// 작성일: 2026-01-30
 // 담당자: 김영대 (azure-mvp@zerobig.kr)
 // 
 // 📚 참조 문서:
@@ -91,7 +91,7 @@ module logicApp 'modules/logic-app.bicep' = {
     storageAccountKey: storage.outputs.storageAccountKey
     adoOrganization: adoOrganization
     adoProject: adoProject
-    openAIEndpoint: 'https://${openAIResourceName}.openai.azure.com/'
+    openAIEndpoint: 'https://${openAIResourceName}.cognitiveservices.azure.com/'
     openAIDeploymentName: openAIDeploymentName
     keyVaultName: keyVaultName
   }
@@ -160,7 +160,7 @@ output teamsConnectionName string = apiConnections.outputs.teamsConnectionName
 output adoConnectionName string = apiConnections.outputs.adoConnectionName
 
 @description('Azure OpenAI Endpoint')
-output openAIEndpoint string = 'https://${openAIResourceName}.openai.azure.com/'
+output openAIEndpoint string = 'https://${openAIResourceName}.cognitiveservices.azure.com/'
 
 @description('Key Vault 이름')
 output keyVaultName string = keyVault.outputs.keyVaultName

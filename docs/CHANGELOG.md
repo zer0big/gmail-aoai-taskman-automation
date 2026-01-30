@@ -5,7 +5,64 @@
 
 ---
 
-## [2.2.0] - 2026-01-30
+## [2.3.0] - 2026-01-30 (Phase 9: Security Hardening)
+
+### 🎯 목표 달성
+- Azure Well-Architected Framework 보안 점검 및 개선
+- 보안 점수 7/10 → 9/10 향상
+
+### 추가됨 (Added)
+- 2026-01-30: `Get_ADO_PAT_From_KeyVault` 액션 추가 (MSI + Key Vault 런타임 조회)
+- 2026-01-30: Easy Auth 구성 (Microsoft Entra ID 인증)
+- 2026-01-30: App Registration `Email2ADO-HTTP-Auth` 생성
+- 2026-01-30: `secureData.properties` 민감 데이터 마스킹
+- 2026-01-30: `docs/DEPLOY.md` 배포 가이드 신규 작성
+- 2026-01-30: `docs/TROUBLESHOOTING.md` 문제 해결 가이드 신규 작성
+
+### 변경됨 (Changed)
+- 2026-01-30: `Create_ADO_WorkItem_HTTP`가 Key Vault에서 런타임에 PAT 조회
+- 2026-01-30: `local.settings.template.json` OpenAI endpoint 수정 (cognitiveservices.azure.com)
+- 2026-01-30: `workflow.json` contentVersion 2.3.0.0으로 업데이트
+- 2026-01-30: `README.md` 전면 개정 (보안 아키텍처, Phase 추적 포함)
+
+### 보안 개선 사항
+- **SEC-01**: ADO PAT App Settings 노출 → Key Vault 런타임 조회로 해결
+- **SEC-02**: HTTP Trigger 무인증 → Easy Auth (Entra ID) 적용
+- **SEC-03**: OpenAI endpoint URL 오류 수정
+
+### 배포 정보
+- **Workflow Version**: 2.3.0.0
+- **App Registration**: Email2ADO-HTTP-Auth (c454a3ed-f41d-4180-82d0-4ab0704fc65c)
+- **ADO Work Item**: #218
+
+---
+
+## [2.2.1] - 2026-01-30 (Phase 8: V1 Connector Workaround)
+
+### 🎯 목표 달성
+- Logic App Standard에서 V1 커넥터 connectionRuntimeUrl 문제 우회
+- Email2ADO-HTTP 워크플로우로 E2E 테스트 성공
+
+### 추가됨 (Added)
+- 2026-01-30: `Email2ADO-HTTP` 워크플로우 (HTTP Trigger 방식)
+- 2026-01-30: Power Automate Workflow 연동 (Teams Incoming Webhook 대체)
+- 2026-01-30: `TEAMS_WORKFLOW_URL` App Setting 추가
+
+### 변경됨 (Changed)
+- 2026-01-30: Teams 알림을 Incoming Webhook에서 Power Automate Workflow로 변경
+
+### 알려진 이슈
+- V1 커넥터(Gmail, Teams, VSTS)가 Logic App Standard에서 `connectionRuntimeUrl` 미지원
+- **해결책**: Email2ADO-HTTP 워크플로우 + 외부 HTTP 호출 사용
+
+### 배포 정보
+- **Healthy Workflow**: Email2ADO-HTTP
+- **Unhealthy Workflow**: Email2ADO-Gmail (V1 제약으로 비활성)
+- **ADO Work Item**: #216
+
+---
+
+## [2.2.0] - 2026-01-30 (Phase 7: Key Vault Integration)
 
 ### 🎯 목표 달성
 - Key Vault 통합으로 보안 강화
