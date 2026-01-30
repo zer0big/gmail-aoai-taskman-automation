@@ -7,7 +7,6 @@
       "connection": {
         "id": "/subscriptions/@appsetting('AZURE_SUBSCRIPTION_ID')/resourceGroups/@appsetting('AZURE_RESOURCE_GROUP')/providers/Microsoft.Web/connections/@appsetting('GMAIL_CONNECTION_NAME')"
       },
-      "connectionRuntimeUrl": "@appsetting('GMAIL_CONNECTION_RUNTIMEURL')",
       "authentication": {
         "type": "ManagedServiceIdentity"
       }
@@ -19,7 +18,6 @@
       "connection": {
         "id": "/subscriptions/@appsetting('AZURE_SUBSCRIPTION_ID')/resourceGroups/@appsetting('AZURE_RESOURCE_GROUP')/providers/Microsoft.Web/connections/@appsetting('TEAMS_CONNECTION_NAME')"
       },
-      "connectionRuntimeUrl": "@appsetting('TEAMS_CONNECTION_RUNTIMEURL')",
       "authentication": {
         "type": "ManagedServiceIdentity"
       }
@@ -31,7 +29,6 @@
       "connection": {
         "id": "/subscriptions/@appsetting('AZURE_SUBSCRIPTION_ID')/resourceGroups/@appsetting('AZURE_RESOURCE_GROUP')/providers/Microsoft.Web/connections/@appsetting('ADO_CONNECTION_NAME')"
       },
-      "connectionRuntimeUrl": "@appsetting('ADO_CONNECTION_RUNTIMEURL')",
       "authentication": {
         "type": "ManagedServiceIdentity"
       }

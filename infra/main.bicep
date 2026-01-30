@@ -52,7 +52,8 @@ param tags object = {
 // ============================================================================
 
 // 리소스 이름 생성 (명명 규칙: {prefix}-{resourceType}-{env})
-var storageAccountName = toLower(replace('${namePrefix}st${environment}${uniqueString(resourceGroup().id)}', '-', ''))
+// Storage Account 이름은 24자 이내, 소문자/숫자만 허용
+var storageAccountName = toLower(take(replace('st${namePrefix}${environment}${uniqueString(resourceGroup().id)}', '-', ''), 24))
 var logicAppName = '${namePrefix}-logic-${environment}'
 var appServicePlanName = '${namePrefix}-asp-${environment}'
 var appInsightsName = '${namePrefix}-appi-${environment}'

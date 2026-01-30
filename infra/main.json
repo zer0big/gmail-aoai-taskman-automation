@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.38.33.27573",
-      "templateHash": "13684688437429387892"
+      "templateHash": "15624869520258387851"
     }
   },
   "parameters": {
@@ -77,7 +77,7 @@
     }
   },
   "variables": {
-    "storageAccountName": "[toLower(replace(format('{0}st{1}{2}', parameters('namePrefix'), parameters('environment'), uniqueString(resourceGroup().id)), '-', ''))]",
+    "storageAccountName": "[toLower(take(replace(format('st{0}{1}{2}', parameters('namePrefix'), parameters('environment'), uniqueString(resourceGroup().id)), '-', ''), 24))]",
     "logicAppName": "[format('{0}-logic-{1}', parameters('namePrefix'), parameters('environment'))]",
     "appServicePlanName": "[format('{0}-asp-{1}', parameters('namePrefix'), parameters('environment'))]",
     "appInsightsName": "[format('{0}-appi-{1}', parameters('namePrefix'), parameters('environment'))]",
@@ -575,7 +575,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.38.33.27573",
-              "templateHash": "6863707733101820276"
+              "templateHash": "13547948285944936336"
             }
           },
           "parameters": {
@@ -612,7 +612,7 @@
             "logicAppPrincipalId": {
               "type": "string",
               "metadata": {
-                "description": "Logic App Principal ID (Access Policy용)"
+                "description": "Logic App Principal ID (참조용)"
               }
             }
           },
@@ -624,34 +624,11 @@
               "location": "[parameters('location')]",
               "tags": "[parameters('tags')]",
               "properties": {
-                "displayName": "Gmail - Email2ADO Workflow",
+                "displayName": "Gmail - zerobig.kim@gmail.com",
                 "api": {
-                  "id": "[subscriptionResourceId('Microsoft.Web/locations/managedApis', parameters('location'), 'gmail')]",
-                  "displayName": "Gmail",
-                  "description": "Gmail connector for email triggers",
-                  "iconUri": "https://connectoricons-prod.azureedge.net/releases/v1.0.1673/1.0.1673.3557/gmail/icon.png",
-                  "brandColor": "#EA4335"
-                },
-                "parameterValues": {}
-              }
-            },
-            {
-              "type": "Microsoft.Web/connections/accessPolicies",
-              "apiVersion": "2016-06-01",
-              "name": "[format('{0}/{1}', parameters('gmailConnectionName'), 'logicapp-policy')]",
-              "location": "[parameters('location')]",
-              "properties": {
-                "principal": {
-                  "type": "ActiveDirectory",
-                  "identity": {
-                    "tenantId": "[subscription().tenantId]",
-                    "objectId": "[parameters('logicAppPrincipalId')]"
-                  }
+                  "id": "[subscriptionResourceId('Microsoft.Web/locations/managedApis', parameters('location'), 'gmail')]"
                 }
-              },
-              "dependsOn": [
-                "[resourceId('Microsoft.Web/connections', parameters('gmailConnectionName'))]"
-              ]
+              }
             },
             {
               "type": "Microsoft.Web/connections",
@@ -662,32 +639,9 @@
               "properties": {
                 "displayName": "Microsoft Teams - Email2ADO Notifications",
                 "api": {
-                  "id": "[subscriptionResourceId('Microsoft.Web/locations/managedApis', parameters('location'), 'teams')]",
-                  "displayName": "Microsoft Teams",
-                  "description": "Teams connector for notifications",
-                  "iconUri": "https://connectoricons-prod.azureedge.net/releases/v1.0.1673/1.0.1673.3557/teams/icon.png",
-                  "brandColor": "#4B53BC"
-                },
-                "parameterValues": {}
-              }
-            },
-            {
-              "type": "Microsoft.Web/connections/accessPolicies",
-              "apiVersion": "2016-06-01",
-              "name": "[format('{0}/{1}', parameters('teamsConnectionName'), 'logicapp-policy')]",
-              "location": "[parameters('location')]",
-              "properties": {
-                "principal": {
-                  "type": "ActiveDirectory",
-                  "identity": {
-                    "tenantId": "[subscription().tenantId]",
-                    "objectId": "[parameters('logicAppPrincipalId')]"
-                  }
+                  "id": "[subscriptionResourceId('Microsoft.Web/locations/managedApis', parameters('location'), 'teams')]"
                 }
-              },
-              "dependsOn": [
-                "[resourceId('Microsoft.Web/connections', parameters('teamsConnectionName'))]"
-              ]
+              }
             },
             {
               "type": "Microsoft.Web/connections",
@@ -698,32 +652,9 @@
               "properties": {
                 "displayName": "Azure DevOps - ZBTaskManager",
                 "api": {
-                  "id": "[subscriptionResourceId('Microsoft.Web/locations/managedApis', parameters('location'), 'visualstudioteamservices')]",
-                  "displayName": "Azure DevOps",
-                  "description": "Azure DevOps connector for work item management",
-                  "iconUri": "https://connectoricons-prod.azureedge.net/releases/v1.0.1673/1.0.1673.3557/visualstudioteamservices/icon.png",
-                  "brandColor": "#0078D7"
-                },
-                "parameterValues": {}
-              }
-            },
-            {
-              "type": "Microsoft.Web/connections/accessPolicies",
-              "apiVersion": "2016-06-01",
-              "name": "[format('{0}/{1}', parameters('adoConnectionName'), 'logicapp-policy')]",
-              "location": "[parameters('location')]",
-              "properties": {
-                "principal": {
-                  "type": "ActiveDirectory",
-                  "identity": {
-                    "tenantId": "[subscription().tenantId]",
-                    "objectId": "[parameters('logicAppPrincipalId')]"
-                  }
+                  "id": "[subscriptionResourceId('Microsoft.Web/locations/managedApis', parameters('location'), 'visualstudioteamservices')]"
                 }
-              },
-              "dependsOn": [
-                "[resourceId('Microsoft.Web/connections', parameters('adoConnectionName'))]"
-              ]
+              }
             }
           ],
           "outputs": {
