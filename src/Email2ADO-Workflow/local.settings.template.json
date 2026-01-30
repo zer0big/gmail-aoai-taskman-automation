@@ -33,8 +33,8 @@
 
     "// === Teams API Connection (MSI 인증) ===": "",
     "TEAMS_CONNECTION_NAME": "teams-prod",
-    "TEAMS_TEAM_ID": "<your-teams-team-id>",
-    "TEAMS_CHANNEL_ID": "<your-teams-channel-id>",
+    "TEAMS_TEAM_ID": "b9367993-aa6c-40f3-93c5-e173a5fba3df",
+    "TEAMS_CHANNEL_ID": "19:749a50ad4a5648d9a691b040e4b6bef4@thread.tacv2",
 
     "// === ADO API Connection (MSI 인증) ===": "",
     "ADO_CONNECTION_NAME": "visualstudioteamservices-prod",
