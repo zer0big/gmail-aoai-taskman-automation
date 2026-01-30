@@ -117,12 +117,12 @@ Copy-Item local.settings.template.json local.settings.json
     "TABLE_STORAGE_CONNECTION": "UseDevelopmentStorage=true",
     "TABLE_NAME": "ProcessedEmails",
     
-    // Teams 정보 (Azure Portal에서 확인)
-    "TEAMS_TEAM_ID": "<your-teams-team-id>",
-    "TEAMS_CHANNEL_ID": "<your-teams-channel-id>",
+    // Teams 정보 (AutoTaskMan 채널)
+    "TEAMS_TEAM_ID": "b9367993-aa6c-40f3-93c5-e173a5fba3df",
+    "TEAMS_CHANNEL_ID": "19:749a50ad4a5648d9a691b040e4b6bef4@thread.tacv2",
     
     // Azure OpenAI (기존 리소스)
-    "AZURE_OPENAI_ENDPOINT": "https://zb-taskman.cognitiveservices.azure.com/",
+    "AZURE_OPENAI_ENDPOINT": "https://zb-taskman.openai.azure.com/",
     "AZURE_OPENAI_DEPLOYMENT_NAME": "gpt-4o"
   }
 }
