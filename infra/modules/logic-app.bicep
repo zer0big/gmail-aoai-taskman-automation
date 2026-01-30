@@ -138,7 +138,7 @@ resource logicApp 'Microsoft.Web/sites@2023-12-01' = {
         }
         {
           name: 'FUNCTIONS_WORKER_RUNTIME'
-          value: 'node'
+          value: 'dotnet'  // Logic Apps Standard는 dotnet 런타임 사용
         }
         {
           name: 'WEBSITE_NODE_DEFAULT_VERSION'

@@ -90,7 +90,7 @@ module logicApp 'modules/logic-app.bicep' = {
     storageAccountKey: storage.outputs.storageAccountKey
     adoOrganization: adoOrganization
     adoProject: adoProject
-    openAIEndpoint: 'https://${openAIResourceName}.cognitiveservices.azure.com/'
+    openAIEndpoint: 'https://${openAIResourceName}.openai.azure.com/'
     openAIDeploymentName: openAIDeploymentName
   }
 }
@@ -104,7 +104,6 @@ module apiConnections 'modules/api-connections.bicep' = {
     gmailConnectionName: gmailConnectionName
     teamsConnectionName: teamsConnectionName
     adoConnectionName: adoConnectionName
-    logicAppPrincipalId: logicApp.outputs.logicAppPrincipalId
   }
 }
 
@@ -148,4 +147,4 @@ output teamsConnectionName string = apiConnections.outputs.teamsConnectionName
 output adoConnectionName string = apiConnections.outputs.adoConnectionName
 
 @description('Azure OpenAI Endpoint')
-output openAIEndpoint string = 'https://${openAIResourceName}.cognitiveservices.azure.com/'
+output openAIEndpoint string = 'https://${openAIResourceName}.openai.azure.com/'

@@ -2,7 +2,7 @@
 
 > **한 줄 요약**: Gmail 메일을 받으면 AI가 분석하고, Azure DevOps Work Item을 자동 생성한 뒤, Teams로 알림을 보내는 시스템
 
-**버전**: v2.0.0-dev | **최종 업데이트**: 2026-01-29 | **담당자**: 김영대 (azure-mvp@zerobig.kr)
+**버전**: v2.0.0 | **최종 업데이트**: 2026-01-30 | **담당자**: 김영대 (azure-mvp@zerobig.kr)
 
 ---
 
@@ -12,9 +12,9 @@
 |------|------|------|----------|
 | 1️⃣ | **README.md** (현재 문서) | 전체 이해 + 빠른 시작 | 5분 |
 | 2️⃣ | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | 상세 구조 이해 | 15분 |
-| 3️⃣ | [docs/DEPLOY.md](docs/DEPLOY.md) | 배포 절차 | 10분 |
-| 4️⃣ | [docs/GMAIL-SETUP.md](docs/GMAIL-SETUP.md) | Gmail 설정 가이드 | 10분 |
-| 📌 | [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | 문제 해결 | 필요시 |
+| 3️⃣ | [docs/GMAIL-SETUP.md](docs/GMAIL-SETUP.md) | Gmail 설정 가이드 | 10분 |
+| 4️⃣ | [docs/LOCAL-TESTING.md](docs/LOCAL-TESTING.md) | 로컬 테스트 환경 | 10분 |
+| 📌 | [docs/GMAIL-FIELD-MAPPING.md](docs/GMAIL-FIELD-MAPPING.md) | Gmail 필드 매핑 | 필요시 |
 | 📌 | [docs/CHANGELOG.md](docs/CHANGELOG.md) | 변경 이력 | 필요시 |
 
 ---
@@ -102,9 +102,12 @@ func start
 | 리소스 | 이름 | 용도 |
 |--------|------|------|
 | Resource Group | `rg-zb-taskman` | 리소스 그룹 |
-| Logic App | (배포 후 확정) | 워크플로 실행 |
-| Storage Account | (배포 후 확정) | Table Storage (중복 방지) |
-| Azure OpenAI | `rg-zb-taskman` 내 | GPT-4o AI 분석 |
+| Logic App | `email2ado-logic-prod` | 워크플로 실행 |
+| Storage Account | `stemail2adoprodxhum3jlfa` | Table Storage (중복 방지) |
+| Azure OpenAI | `zb-taskman` | GPT-4o AI 분석 |
+| API Connection (Gmail) | `gmail-prod` | Gmail 트리거 |
+| API Connection (Teams) | `teams-prod` | Teams 알림 |
+| API Connection (ADO) | `visualstudioteamservices-prod` | Work Item 생성 |
 
 ---
 
@@ -120,6 +123,7 @@ func start
 
 | 버전 | 날짜 | 변경 내용 |
 |------|------|----------|
+| v2.0.0 | 2026-01-30 | Gmail 트리거 전환 완료, rg-zb-taskman 배포 |
 | v2.0.0-dev | 2026-01-29 | Gmail 트리거 전환 시작 |
 | v1.0.0 | 2026-01-24 | Office 365 기반 초기 버전 |
 

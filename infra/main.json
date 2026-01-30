@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.38.33.27573",
-      "templateHash": "15624869520258387851"
+      "templateHash": "136216024577534658"
     }
   },
   "parameters": {
@@ -271,7 +271,7 @@
             "value": "[parameters('adoProject')]"
           },
           "openAIEndpoint": {
-            "value": "[format('https://{0}.cognitiveservices.azure.com/', parameters('openAIResourceName'))]"
+            "value": "[format('https://{0}.openai.azure.com/', parameters('openAIResourceName'))]"
           },
           "openAIDeploymentName": {
             "value": "[parameters('openAIDeploymentName')]"
@@ -284,7 +284,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.38.33.27573",
-              "templateHash": "8339474905598522308"
+              "templateHash": "5298925103312561310"
             }
           },
           "parameters": {
@@ -422,7 +422,7 @@
                     },
                     {
                       "name": "FUNCTIONS_WORKER_RUNTIME",
-                      "value": "node"
+                      "value": "dotnet"
                     },
                     {
                       "name": "WEBSITE_NODE_DEFAULT_VERSION",
@@ -563,9 +563,6 @@
           },
           "adoConnectionName": {
             "value": "[variables('adoConnectionName')]"
-          },
-          "logicAppPrincipalId": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'logicapp-deployment'), '2025-04-01').outputs.logicAppPrincipalId.value]"
           }
         },
         "template": {
@@ -575,7 +572,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.38.33.27573",
-              "templateHash": "13547948285944936336"
+              "templateHash": "9830888182672422474"
             }
           },
           "parameters": {
@@ -607,12 +604,6 @@
               "type": "string",
               "metadata": {
                 "description": "Azure DevOps API Connection 이름"
-              }
-            },
-            "logicAppPrincipalId": {
-              "type": "string",
-              "metadata": {
-                "description": "Logic App Principal ID (참조용)"
               }
             }
           },
@@ -702,10 +693,7 @@
             }
           }
         }
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.Resources/deployments', 'logicapp-deployment')]"
-      ]
+      }
     }
   ],
   "outputs": {
@@ -756,7 +744,7 @@
       "metadata": {
         "description": "Azure OpenAI Endpoint"
       },
-      "value": "[format('https://{0}.cognitiveservices.azure.com/', parameters('openAIResourceName'))]"
+      "value": "[format('https://{0}.openai.azure.com/', parameters('openAIResourceName'))]"
     }
   }
 }

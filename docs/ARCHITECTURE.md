@@ -67,7 +67,7 @@
 | **Key Vault 통합** | ADO PAT 등 민감 정보 Key Vault 저장 | `local.settings.template.json` |
 | **HTTPS 전용** | 모든 통신 TLS 1.2+ 강제 | `storage.bicep` |
 | **OAuth 2.0** | Gmail, Teams, ADO 커넥터 OAuth 인증 | `api-connections.bicep` |
-| **Access Policy** | API Connection에 Logic App만 접근 허용 | `api-connections.bicep` |
+| **V1 Connection + MSI** | API Connection에 Logic App MSI로 접근 (Contributor 역할) | `api-connections.bicep` |
 
 #### MSI 인증 예시
 

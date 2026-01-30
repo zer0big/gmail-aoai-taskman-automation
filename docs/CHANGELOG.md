@@ -5,6 +5,41 @@
 
 ---
 
+## [2.0.0] - 2026-01-30
+
+### 🎯 목표 달성
+- Office 365 Outlook 트리거 → Gmail 트리거 전환 완료
+- rg-zb-taskman 리소스 그룹에 프로덕션 배포 완료
+
+### 추가됨 (Added)
+- 2026-01-30: V1 API Connection MSI 인증 구현
+- 2026-01-30: STORAGE_ACCOUNT_NAME App Setting 추가
+- 2026-01-29: zbtaskman.bicepparam 파라미터 파일 생성
+- 2026-01-29: Gmail 트리거 workflow.json 구현
+- 2026-01-29: connections.json MSI 인증 방식 적용
+
+### 변경됨 (Changed)
+- 2026-01-30: api-connections.bicep V1 연결 단순화 (Access Policy 제거)
+- 2026-01-30: main.bicep 스토리지 이름 길이 제한 수정 (24자)
+- 2026-01-30: Azure OpenAI 엔드포인트 도메인 수정 (openai.azure.com)
+- 2026-01-30: FUNCTIONS_WORKER_RUNTIME dotnet으로 수정
+- 2026-01-29: workflow.json 트리거 섹션 Gmail용으로 변경
+- 2026-01-29: 변수 초기화 필드 매핑 Gmail 형식으로 변경
+
+### 제거됨 (Removed)
+- 2026-01-30: api-connections.bicep에서 미사용 logicAppPrincipalId 파라미터 제거
+- 2026-01-30: connectionRuntimeUrl, CONNECTION_KEY 설정 제거 (V1 MSI 미지원)
+- 2026-01-29: Office 365 Outlook 커넥터 제거
+
+### 배포 정보
+- **리소스 그룹**: rg-zb-taskman
+- **Logic App**: email2ado-logic-prod
+- **Storage Account**: stemail2adoprodxhum3jlfa
+- **API Connections**: gmail-prod, teams-prod, visualstudioteamservices-prod
+- **Azure OpenAI**: zb-taskman (gpt-4o)
+
+---
+
 ## [Unreleased] - v2.0.0-dev
 
 ### 🎯 목표

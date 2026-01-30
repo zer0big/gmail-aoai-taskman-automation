@@ -8,7 +8,7 @@
 |------|-----|
 | **Gmail 계정** | `zerobig.kim@gmail.com` |
 | **계정 유형** | 소비자 계정 (@gmail.com) |
-| **연결 방식** | Azure Logic Apps Gmail Connector + OAuth 2.0 |
+| **연결 방식** | V1 API Connection + OAuth 2.0 + MSI 인증 |
 
 ---
 

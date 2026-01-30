@@ -38,9 +38,6 @@ param teamsConnectionName string
 @description('Azure DevOps API Connection 이름')
 param adoConnectionName string
 
-@description('Logic App Principal ID (참조용)')
-param logicAppPrincipalId string
-
 // ============================================================================
 // 📧 Gmail API Connection (V1)
 // ============================================================================
