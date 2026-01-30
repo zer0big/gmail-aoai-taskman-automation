@@ -1,4 +1,4 @@
-ydkim@tdgl.co.kr# 📧 ZBTaskManager - Gmail 기반 이메일 자동화 시스템
+# 📧 ZBTaskManager - Gmail 기반 이메일 자동화 시스템
 
 > **한 줄 요약**: Gmail 메일을 받으면 AI가 분석하고, Azure DevOps Work Item을 자동 생성한 뒤, Teams로 알림을 보내는 시스템
 
@@ -21,14 +21,18 @@ ydkim@tdgl.co.kr# 📧 ZBTaskManager - Gmail 기반 이메일 자동화 시스�
 
 ## 🎯 시스템 개요
 
-```
-┌─────────────┐    ┌──────────────┐    ┌─────────────────┐    ┌──────────────┐    ┌────────────┐
-│  📧 Gmail   │───▶│  🔍 중복체크  │───▶│  🤖 AI 분석     │───▶│  📝 Work Item │───▶│  💬 Teams   │
-│  메일 수신  │    │  (이미 처리?) │    │  (GPT-4o 요약)  │    │  자동 생성    │    │  알림       │
-└─────────────┘    └──────┬───────┘    └─────────────────┘    └──────────────┘    └────────────┘
-                          │ 신규 메일만 통과 ↑
-                          ▼ 중복이면
-                     ✅ 종료 (재처리 방지)
+```mermaid
+flowchart LR
+    A["📧 Gmail<br/>메일 수신"] --> B{"🔍 중복체크<br/>이미 처리?"}
+    B -->|신규 메일| C["🤖 AI 분석<br/>GPT-4o 요약"]
+    B -->|중복 메일| D["✅ 종료<br/>재처리 방지"]
+    C --> E["📝 Work Item<br/>자동 생성"]
+    E --> F["💬 Teams<br/>알림"]
+    
+    style A fill:#4285f4,color:#fff
+    style C fill:#10a37f,color:#fff
+    style E fill:#0078d4,color:#fff
+    style F fill:#6264a7,color:#fff
 ```
 
 ---

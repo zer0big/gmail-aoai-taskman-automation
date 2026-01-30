@@ -602,10 +602,10 @@ az rest --method GET `
 ---
 
 ## 👥 기여자
-- 김영대 (ydkim@tdgl.co.kr)
+- 김영대 (azure-mvp@zerobig.kr)
 
 ## 📄 라이선스
-Internal Use Only - TDG
+Internal Use Only
 
 ## 📅 변경 이력
 | 버전 | 날짜 | 변경 내용 |
