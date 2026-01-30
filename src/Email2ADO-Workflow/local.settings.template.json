@@ -38,11 +38,12 @@
 
     "// === ADO API Connection (MSI 인증) ===": "",
     "// Work Item 생성: OAuth API Connection 사용 (PAT 불필요)": "",
-    "// AssignedTo/Tags 업데이트: HTTP 직접 호출을 위해 PAT 필요 (VSTS 커넥터 제약)": "",
+    "// AssignedTo/Tags 업데이트: Key Vault에서 PAT 참조 (VSTS 커넥터 제약)": "",
+    "// Azure 배포 시: @Microsoft.KeyVault(VaultName=kv-zbtask-prod;SecretName=ado-pat)": "",
     "ADO_CONNECTION_NAME": "visualstudioteamservices-prod",
     "ADO_ORGANIZATION": "azure-mvp",
     "ADO_PROJECT": "ZBTaskManager",
-    "ADO_PAT": "<your-ado-pat-for-field-update>",
+    "ADO_PAT": "<로컬에서는 PAT 직접 입력, Azure에서는 Key Vault Reference 사용>",
 
     "// === Azure OpenAI ===": "",
     "// 기존 리소스 사용 (rg-zb-taskman 리소스 그룹)": "",

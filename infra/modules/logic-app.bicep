@@ -50,6 +50,9 @@ param openAIEndpoint string
 @description('Azure OpenAI 배포 이름')
 param openAIDeploymentName string
 
+@description('Key Vault 이름 (ADO PAT 저장용)')
+param keyVaultName string = ''
+
 // ============================================================================
 // 📦 App Service Plan 배포
 // ============================================================================
@@ -205,13 +208,14 @@ resource logicApp 'Microsoft.Web/sites@2023-12-01' = {
           value: 'ProcessedEmails'
         }
         // ────────────────────────────────────────────
-        // 🔐 보안 설정
+        // 🔐 보안 설정 (Key Vault Reference)
         // ────────────────────────────────────────────
         // ADO Work Item 생성: OAuth API Connection 사용 (PAT 불필요)
         // ADO 필드 업데이트 (AssignedTo/Tags): VSTS 커넥터 제약으로 HTTP 직접 호출 필요 (PAT 필요)
+        // 📌 Key Vault에서 참조: 배포 후 az keyvault secret set 명령으로 PAT 저장 필요
         {
           name: 'ADO_PAT'
-          value: ''  // 📌 배포 후 ADO PAT 설정 필요 (Work Items R/W 권한)
+          value: keyVaultName != '' ? '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=ado-pat)' : ''
         }
       ]
     }

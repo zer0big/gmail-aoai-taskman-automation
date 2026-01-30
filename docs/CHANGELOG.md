@@ -5,6 +5,32 @@
 
 ---
 
+## [2.2.0] - 2026-01-30
+
+### 🎯 목표 달성
+- Key Vault 통합으로 보안 강화
+- ADO PAT를 Key Vault에 안전하게 저장
+
+### 추가됨 (Added)
+- 2026-01-30: Key Vault 리소스 생성 (kv-zbtask-prod)
+- 2026-01-30: Key Vault Bicep 모듈 (infra/modules/key-vault.bicep)
+- 2026-01-30: ADO PAT Secret 저장 (ado-pat)
+- 2026-01-30: Logic App MSI에 Key Vault Secrets User 역할 부여
+
+### 변경됨 (Changed)
+- 2026-01-30: ADO_PAT App Setting을 Key Vault Reference로 변경
+- 2026-01-30: logic-app.bicep에 keyVaultName 파라미터 추가
+- 2026-01-30: main.bicep에 Key Vault 모듈 통합
+- 2026-01-30: ARCHITECTURE.md 보안 섹션 Key Vault 반영
+- 2026-01-30: README.md Azure 리소스 테이블에 Key Vault 추가
+
+### 배포 정보
+- **Key Vault**: kv-zbtask-prod
+- **Secret**: ado-pat (Key Vault Reference로 참조)
+- **RBAC**: Logic App MSI에 Key Vault Secrets User 역할
+
+---
+
 ## [2.0.0] - 2026-01-30
 
 ### 🎯 목표 달성

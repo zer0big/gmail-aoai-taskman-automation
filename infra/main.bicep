@@ -57,6 +57,7 @@ var storageAccountName = toLower(take(replace('st${namePrefix}${environment}${un
 var logicAppName = '${namePrefix}-logic-${environment}'
 var appServicePlanName = '${namePrefix}-asp-${environment}'
 var appInsightsName = '${namePrefix}-appi-${environment}'
+var keyVaultName = 'kv-${namePrefix}-${environment}'
 
 // API Connection 이름
 var gmailConnectionName = 'gmail-${environment}'
@@ -92,6 +93,7 @@ module logicApp 'modules/logic-app.bicep' = {
     adoProject: adoProject
     openAIEndpoint: 'https://${openAIResourceName}.openai.azure.com/'
     openAIDeploymentName: openAIDeploymentName
+    keyVaultName: keyVaultName
   }
 }
 
@@ -104,6 +106,17 @@ module apiConnections 'modules/api-connections.bicep' = {
     gmailConnectionName: gmailConnectionName
     teamsConnectionName: teamsConnectionName
     adoConnectionName: adoConnectionName
+  }
+}
+
+// Key Vault (ADO PAT 등 민감 정보 저장)
+module keyVault 'modules/key-vault.bicep' = {
+  name: 'keyvault-deployment'
+  params: {
+    keyVaultName: keyVaultName
+    location: location
+    tags: tags
+    logicAppPrincipalId: logicApp.outputs.logicAppPrincipalId
   }
 }
 
@@ -148,3 +161,9 @@ output adoConnectionName string = apiConnections.outputs.adoConnectionName
 
 @description('Azure OpenAI Endpoint')
 output openAIEndpoint string = 'https://${openAIResourceName}.openai.azure.com/'
+
+@description('Key Vault 이름')
+output keyVaultName string = keyVault.outputs.keyVaultName
+
+@description('Key Vault URI')
+output keyVaultUri string = keyVault.outputs.keyVaultUri

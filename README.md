@@ -1,8 +1,8 @@
-# 📧 ZBTaskManager - Gmail 기반 이메일 자동화 시스템
+ydkim@tdgl.co.kr# 📧 ZBTaskManager - Gmail 기반 이메일 자동화 시스템
 
 > **한 줄 요약**: Gmail 메일을 받으면 AI가 분석하고, Azure DevOps Work Item을 자동 생성한 뒤, Teams로 알림을 보내는 시스템
 
-**버전**: v2.0.0 | **최종 업데이트**: 2026-01-30 | **담당자**: 김영대 (azure-mvp@zerobig.kr)
+**버전**: v2.2.0 | **최종 업데이트**: 2026-01-30 | **담당자**: 김영대 (azure-mvp@zerobig.kr)
 
 ---
 
@@ -105,6 +105,7 @@ func start
 | Logic App | `email2ado-logic-prod` | 워크플로 실행 |
 | Storage Account | `stemail2adoprodxhum3jlfa` | Table Storage (중복 방지) |
 | Azure OpenAI | `zb-taskman` | GPT-4o AI 분석 |
+| **Key Vault** | `kv-zbtask-prod` | ADO PAT 보안 저장 |
 | API Connection (Gmail) | `gmail-prod` | Gmail 트리거 |
 | API Connection (Teams) | `teams-prod` | Teams 알림 |
 | API Connection (ADO) | `visualstudioteamservices-prod` | Work Item 생성 |
@@ -123,6 +124,7 @@ func start
 
 | 버전 | 날짜 | 변경 내용 |
 |------|------|----------|
+| v2.2.0 | 2026-01-30 | Key Vault 통합 (ADO PAT 보안 강화) |
 | v2.0.0 | 2026-01-30 | Gmail 트리거 전환 완료, rg-zb-taskman 배포 |
 | v2.0.0-dev | 2026-01-29 | Gmail 트리거 전환 시작 |
 | v1.0.0 | 2026-01-24 | Office 365 기반 초기 버전 |
