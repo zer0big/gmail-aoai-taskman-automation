@@ -64,7 +64,7 @@
 | 항목 | 구현 내용 | 위치 |
 |------|----------|------|
 | **Managed Identity** | Logic App MSI로 Azure 리소스 접근 | `logic-app.bicep` |
-| **Key Vault 통합** | ADO PAT 등 민감 정보 Key Vault 저장 | `local.settings.template.json` |
+| **MSI 기반 인증** | ADO, Teams, OpenAI 모두 MSI+OAuth로 인증 (PAT/API Key 불필요) | `connections.json` |
 | **HTTPS 전용** | 모든 통신 TLS 1.2+ 강제 | `storage.bicep` |
 | **OAuth 2.0** | Gmail, Teams, ADO 커넥터 OAuth 인증 | `api-connections.bicep` |
 | **V1 Connection + MSI** | API Connection에 Logic App MSI로 접근 (Contributor 역할) | `api-connections.bicep` |
@@ -186,19 +186,21 @@ Scope_Notification           Scope_Error_Handler
 └──────┬──────┘
        │ MSI Token
        ▼
-┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│ Table       │     │ Azure       │     │ Key Vault   │
-│ Storage     │     │ OpenAI      │     │ (Secrets)   │
-└─────────────┘     └─────────────┘     └─────────────┘
+┌─────────────┐     ┌─────────────┐
+│ Table       │     │ Azure       │
+│ Storage     │     │ OpenAI      │
+└─────────────┘     └─────────────┘
 ```
 
 ### 민감 정보 관리
 
-| 항목 | 저장 위치 | 접근 방식 |
-|------|----------|----------|
-| ADO PAT | Key Vault | `@Microsoft.KeyVault(...)` 참조 |
-| Storage Key | Logic App App Settings | MSI 전환 권장 |
-| OAuth Tokens | API Connection | 자동 관리 |
+| 항목 | 저장 위치 | 접근 방식 | 비고 |
+|------|----------|----------|------|
+| ADO Work Item 생성 | API Connection (OAuth) | MSI + OAuth | PAT 불필요 |
+| ADO 필드 업데이트 | App Settings (ADO_PAT) | HTTP Basic Auth | VSTS 커넥터 제약 우회용 |
+| Storage Key | App Settings | 연결 문자열 | MSI 전환 권장 |
+| OAuth Tokens | API Connection | 자동 관리 | - |
+| OpenAI 인증 | MSI | Cognitive Services User | API Key 불필요 |
 
 ## 📚 참조 문서
 

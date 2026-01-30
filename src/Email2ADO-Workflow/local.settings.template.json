@@ -37,9 +37,12 @@
     "TEAMS_CHANNEL_ID": "19:749a50ad4a5648d9a691b040e4b6bef4@thread.tacv2",
 
     "// === ADO API Connection (MSI 인증) ===": "",
+    "// Work Item 생성: OAuth API Connection 사용 (PAT 불필요)": "",
+    "// AssignedTo/Tags 업데이트: HTTP 직접 호출을 위해 PAT 필요 (VSTS 커넥터 제약)": "",
     "ADO_CONNECTION_NAME": "visualstudioteamservices-prod",
     "ADO_ORGANIZATION": "azure-mvp",
     "ADO_PROJECT": "ZBTaskManager",
+    "ADO_PAT": "<your-ado-pat-for-field-update>",
 
     "// === Azure OpenAI ===": "",
     "// 기존 리소스 사용 (rg-zb-taskman 리소스 그룹)": "",

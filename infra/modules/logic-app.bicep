@@ -204,15 +204,14 @@ resource logicApp 'Microsoft.Web/sites@2023-12-01' = {
           name: 'TABLE_NAME'
           value: 'ProcessedEmails'
         }
-        
         // ────────────────────────────────────────────
-        // 🔐 보안 설정 (Key Vault 참조용 플레이스홀더)
+        // 🔐 보안 설정
         // ────────────────────────────────────────────
-        // ADO PAT는 Key Vault에서 참조
-        // 형식: @Microsoft.KeyVault(VaultName=mykeyvault;SecretName=ado-pat)
+        // ADO Work Item 생성: OAuth API Connection 사용 (PAT 불필요)
+        // ADO 필드 업데이트 (AssignedTo/Tags): VSTS 커넥터 제약으로 HTTP 직접 호출 필요 (PAT 필요)
         {
           name: 'ADO_PAT'
-          value: ''  // 📌 배포 후 Key Vault 참조로 교체 필요
+          value: ''  // 📌 배포 후 ADO PAT 설정 필요 (Work Items R/W 권한)
         }
       ]
     }
