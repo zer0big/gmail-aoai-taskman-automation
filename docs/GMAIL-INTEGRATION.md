@@ -96,7 +96,7 @@ az rest --method GET \
 ### 3.1 사전 요구사항
 
 - Google 계정 (Gmail 접근 권한)
-- Logic App HTTP Trigger URL
+- Logic App HTTP Trigger URL (Azure Portal에서 확인)
 
 ### 3.2 Apps Script 설정
 
@@ -108,7 +108,45 @@ az rest --method GET \
 
 4. **저장** (Ctrl+S)
 
-### 3.3 트리거 설정
+### 3.3 🔐 Webhook URL 설정 (필수)
+
+코드에 URL이 하드코딩되어 있지 않으므로, Script Properties에 설정해야 합니다.
+
+#### 방법 1: Script Properties에서 직접 설정 (권장)
+
+1. 좌측 메뉴 ⚙️ **프로젝트 설정** 클릭
+2. 아래로 스크롤 → **스크립트 속성** 섹션
+3. **스크립트 속성 추가** 클릭:
+   ```
+   속성: WEBHOOK_URL
+   값:   (Azure Portal에서 복사한 Logic App Workflow URL)
+   ```
+4. **저장**
+
+#### 방법 2: 코드로 1회성 설정
+
+Apps Script 에디터에서 아래 코드를 임시 추가 후 실행:
+
+```javascript
+function setUrlOnce() {
+  PropertiesService.getScriptProperties().setProperty(
+    'WEBHOOK_URL', 
+    'YOUR_LOGIC_APP_WORKFLOW_URL_HERE'
+  );
+  Logger.log('✅ URL 설정 완료');
+}
+```
+
+실행 후 해당 코드는 **반드시 삭제** (보안)
+
+#### URL 설정 확인
+
+`checkWebhookUrl` 함수 실행 → View > Logs에서 확인:
+```
+✅ Webhook URL 설정됨: https://email2ado-logic-prod.azurewebsites...[MASKED]
+```
+
+### 3.4 트리거 설정
 
 1. 좌측 **⏰ 트리거** 클릭
 2. **"+ 트리거 추가"** 클릭
@@ -119,7 +157,7 @@ az rest --method GET \
    - 간격: `5분마다`
 4. **저장**
 
-### 3.4 권한 승인
+### 3.5 권한 승인
 
 첫 실행 시 Google 권한 요청:
 
@@ -130,15 +168,20 @@ az rest --method GET \
 
 > ⚠️ 본인 계정으로 만든 스크립트이므로 안전합니다.
 
-### 3.5 HTTP Trigger URL
+### 3.6 HTTP Trigger URL 확인
 
-현재 운영 URL (gmail-trigger.gs에 설정됨):
+Azure Portal에서 URL 확인:
 
+1. **Azure Portal** > **Logic App** (`email2ado-logic-prod`)
+2. **Workflows** > **Email2ADO-HTTP** > **Overview**
+3. **Workflow URL** 복사
+
+URL 형식:
 ```
-https://email2ado-logic-prod.azurewebsites.net/api/Email2ADO-HTTP/triggers/HTTP_Trigger/invoke?api-version=2022-05-01&sp=%2Ftriggers%2FHTTP_Trigger%2Frun&sv=1.0&sig=<YOUR_SAS_SIGNATURE>
+https://email2ado-logic-prod.azurewebsites.net/api/Email2ADO-HTTP/triggers/HTTP_Trigger/invoke?api-version=2022-05-01&sp=%2Ftriggers%2FHTTP_Trigger%2Frun&sv=1.0&sig=<SAS_SIGNATURE>
 ```
 
-> ⚠️ **보안**: SAS 서명(`sig=...`)은 Azure Portal에서 확인하여 Apps Script Properties에 저장하세요.
+> ⚠️ **보안**: SAS 서명(`sig=...`)은 절대 코드나 문서에 노출하지 마세요. Script Properties에만 저장합니다.
 
 ---
 

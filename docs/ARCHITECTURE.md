@@ -59,7 +59,7 @@
 
 > **목표**: 데이터와 시스템을 위협으로부터 보호
 
-#### 보안 점수: 9/10 (v2.3.0 기준)
+#### 보안 점수: 9/10 (v2.4.0 기준)
 
 #### 적용 사항
 
@@ -255,7 +255,7 @@ ADO PAT는 App Settings Key Vault Reference가 아닌, 워크플로우 실행 �
 | Storage Key | App Settings | 연결 문자열 | MSI 전환 권장 |
 | OAuth Tokens | API Connection | 자동 관리 | - |
 | OpenAI 인증 | MSI | Cognitive Services User | API Key 불필요 |
-| HTTP Trigger 인증 | Easy Auth | Entra ID Bearer Token | v2.3.0+ |
+| HTTP Trigger 인증 | SAS 서명 | URL sig= 파라미터 | v2.4.0 (비활성화) |
 
 ## 📚 참조 문서
 
