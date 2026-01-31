@@ -2,7 +2,7 @@
 
 > **한 줄 요약**: Gmail 메일 수신 → AI 분석(GPT-4o) → Azure DevOps Work Item 자동 생성 → Teams 알림
 
-**버전**: v2.4.0 | **최종 업데이트**: 2026-01-31 | **담당자**: 김영대 (azure-mvp@zerobig.kr)
+**버전**: v2.4.0 | **최종 업데이트**: 2026-01-31 | **담당자**: 김영대 (azure-mvp@zerobig.kr) | **상태**: ✅ 운영 중
 
 ---
 

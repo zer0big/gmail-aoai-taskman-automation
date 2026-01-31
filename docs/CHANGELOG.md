@@ -5,30 +5,41 @@
 
 ---
 
-## [2.4.0] - 2026-01-31 (Phase 11: Gmail 자동 연동)
+## [2.4.0] - 2026-01-31 (Phase 11: Gmail 자동 연동 ✅ 완료)
 
 ### 🎯 목표 달성
-- Gmail 신규 메일 수신 시 자동으로 Email2ADO-HTTP 워크플로우 호출
-- V1 커넥터 제한을 Google Apps Script로 우회
+- ✅ Gmail 신규 메일 수신 시 자동으로 Email2ADO-HTTP 워크플로우 호출
+- ✅ V1 커넥터 제한을 Google Apps Script로 우회
+- ✅ E2E 테스트 성공 - Work Item #226 자동 생성 확인
 
 ### 추가됨 (Added)
 - 2026-01-31: `scripts/gmail-trigger.gs` Google Apps Script 신규 생성
 - 2026-01-31: `docs/GMAIL-INTEGRATION.md` Gmail 자동 연동 가이드 신규 생성
+- 2026-01-31: Google Apps Script 프로젝트 `Email2ADO-Trigger` 배포
+- 2026-01-31: Gmail 필터 설정 (Microsoft OR MVP 키워드)
+
+### 변경됨 (Changed)
+- 2026-01-31: Easy Auth 비활성화 (익명 HTTP 호출 허용, SAS 서명으로 보안 유지)
+- 2026-01-31: HTTP 트리거 URL 수정 (`HTTP_Trigger` - 정확한 트리거명)
 
 ### 원인 분석
 - 2026-01-31 수신된 이메일 3건이 처리되지 않음
 - V1 Gmail 커넥터가 Logic App Standard에서 실제 폴링을 수행하지 않음
 - Email2ADO-HTTP는 HTTP Trigger이므로 외부 호출 필요
+- Easy Auth가 익명 HTTP 호출을 차단하고 있었음
 
 ### 해결 방법
 - Google Apps Script로 Gmail 신규 메일 모니터링
 - 5분 간격으로 `Email2ADO` 레이블 이메일 처리
 - HTTP POST로 Email2ADO-HTTP 워크플로우 호출
+- Gmail 필터로 키워드 기반 자동 레이블 적용
 
 ### 배포 정보
-- **Google Apps Script**: Gmail 트리거 (5분 간격)
+- **Google Apps Script**: Email2ADO-Trigger (5분 간격 트리거)
 - **Gmail 레이블**: Email2ADO, Email2ADO/Processed
-- **ADO Work Item**: #220
+- **Gmail 필터**: `Microsoft OR MVP`
+- **HTTP Trigger URL**: `https://email2ado-logic-prod.azurewebsites.net/api/Email2ADO-HTTP/triggers/HTTP_Trigger/invoke?...`
+- **ADO Work Item**: #221, #227
 
 ---
 

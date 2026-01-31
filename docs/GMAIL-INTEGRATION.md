@@ -1,6 +1,21 @@
 # Gmail → Email2ADO-HTTP 자동 연동 가이드
 
+> **상태**: ✅ **배포 완료** (2026-01-31) | E2E 테스트 성공
+
 Gmail에서 새 이메일 수신 시 자동으로 Email2ADO-HTTP 워크플로우를 호출하는 방법을 설명합니다.
+
+---
+
+## 📊 현재 구성
+
+| 항목 | 값 |
+|------|-----|
+| **Apps Script 프로젝트** | Email2ADO-Trigger |
+| **트리거 간격** | 5분 |
+| **Gmail 필터** | `Microsoft OR MVP` |
+| **Gmail 레이블** | Email2ADO, Email2ADO/Processed |
+| **HTTP Trigger** | HTTP_Trigger |
+| **테스트 결과** | Work Item #226 자동 생성 확인 |
 
 ---
 
