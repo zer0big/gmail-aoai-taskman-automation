@@ -5,6 +5,33 @@
 
 ---
 
+## [2.4.0] - 2026-01-31 (Phase 11: Gmail 자동 연동)
+
+### 🎯 목표 달성
+- Gmail 신규 메일 수신 시 자동으로 Email2ADO-HTTP 워크플로우 호출
+- V1 커넥터 제한을 Google Apps Script로 우회
+
+### 추가됨 (Added)
+- 2026-01-31: `scripts/gmail-trigger.gs` Google Apps Script 신규 생성
+- 2026-01-31: `docs/GMAIL-INTEGRATION.md` Gmail 자동 연동 가이드 신규 생성
+
+### 원인 분석
+- 2026-01-31 수신된 이메일 3건이 처리되지 않음
+- V1 Gmail 커넥터가 Logic App Standard에서 실제 폴링을 수행하지 않음
+- Email2ADO-HTTP는 HTTP Trigger이므로 외부 호출 필요
+
+### 해결 방법
+- Google Apps Script로 Gmail 신규 메일 모니터링
+- 5분 간격으로 `Email2ADO` 레이블 이메일 처리
+- HTTP POST로 Email2ADO-HTTP 워크플로우 호출
+
+### 배포 정보
+- **Google Apps Script**: Gmail 트리거 (5분 간격)
+- **Gmail 레이블**: Email2ADO, Email2ADO/Processed
+- **ADO Work Item**: #220
+
+---
+
 ## [2.3.0] - 2026-01-30 (Phase 9: Security Hardening)
 
 ### 🎯 목표 달성

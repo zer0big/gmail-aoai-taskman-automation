@@ -2,7 +2,7 @@
 
 > **한 줄 요약**: Gmail 메일 수신 → AI 분석(GPT-4o) → Azure DevOps Work Item 자동 생성 → Teams 알림
 
-**버전**: v2.3.0 | **최종 업데이트**: 2026-01-30 | **담당자**: 김영대 (azure-mvp@zerobig.kr)
+**버전**: v2.4.0 | **최종 업데이트**: 2026-01-31 | **담당자**: 김영대 (azure-mvp@zerobig.kr)
 
 ---
 
@@ -14,7 +14,8 @@
 | 2️⃣ | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | 상세 아키텍처 설계 | 15분 |
 | 3️⃣ | [docs/DEPLOY.md](docs/DEPLOY.md) | 🆕 **Azure 배포 가이드** | 20분 |
 | 4️⃣ | [docs/GMAIL-SETUP.md](docs/GMAIL-SETUP.md) | Gmail OAuth 연결 설정 | 10분 |
-| 5️⃣ | [docs/LOCAL-TESTING.md](docs/LOCAL-TESTING.md) | 로컬 개발 환경 설정 | 10분 |
+| 5️⃣ | [docs/GMAIL-INTEGRATION.md](docs/GMAIL-INTEGRATION.md) | 🆕 **Gmail 자동 연동 가이드** | 15분 |
+| 6️⃣ | [docs/LOCAL-TESTING.md](docs/LOCAL-TESTING.md) | 로컸 개발 환경 설정 | 10분 |
 | 📌 | [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | 🆕 **문제 해결 가이드** | 필요시 |
 | 📌 | [docs/GMAIL-FIELD-MAPPING.md](docs/GMAIL-FIELD-MAPPING.md) | Gmail 필드 매핑 참조 | 필요시 |
 | 📌 | [docs/CHANGELOG.md](docs/CHANGELOG.md) | 변경 이력 | 필요시 |
@@ -83,7 +84,8 @@ Email2ADO/
 │   └── parameters/                 # 환경별 파라미터
 │       └── zbtaskman.bicepparam    # prod 환경
 │
-├── 📁 scripts/                     # 운영 스크립트 (예정)
+├─ 📁 scripts/                     # 🆕 Gmail 연동 스크립트
+│   └─ gmail-trigger.gs            # Google Apps Script (Gmail → HTTP)
 │
 ├── 📁 tests/                       # 테스트
 │
@@ -251,7 +253,9 @@ func start
 | Phase 6 | 문서화 및 완료 | ✅ Done | #211 |
 | Phase 7 | Key Vault 보안 강화 | ✅ Done | #213 |
 | Phase 8 | V1 커넥터 제한 우회 | ✅ Done | #216 |
-| **Phase 9** | **Azure WAF 보안 강화** | ✅ Done | #218 |
+| Phase 9 | Azure WAF 보안 강화 | ✅ Done | #218 |
+| Phase 10 | 프로젝트 문서 현행화 | ✅ Done | #219 |
+| **Phase 11** | **Gmail 자동 연동 구성** | ✅ Done | #221 |
 
 ---
 
@@ -279,7 +283,8 @@ func start
 
 | 버전 | 날짜 | 변경 내용 |
 |------|------|----------|
-| **v2.3.0** | 2026-01-30 | Azure WAF 보안 강화 (Key Vault 런타임, Easy Auth) |
+| **v2.4.0** | 2026-01-31 | Gmail 자동 연동 (Google Apps Script), 문서 현행화 |
+| v2.3.0 | 2026-01-30 | Azure WAF 보안 강화 (Key Vault 런타임, Easy Auth) |
 | v2.2.0 | 2026-01-30 | Phase 8 - V1 커넥터 우회, E2E 테스트 완료 |
 | v2.1.0 | 2026-01-30 | Key Vault 통합 (ADO PAT 보안 저장) |
 | v2.0.0 | 2026-01-30 | Gmail 트리거 전환, rg-zb-taskman 배포 |
