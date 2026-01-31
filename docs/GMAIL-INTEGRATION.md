@@ -62,10 +62,11 @@ Gmail에서 새 이메일 수신 시 자동으로 Email2ADO-HTTP 워크플로우
    - `scripts/gmail-trigger.gs` 파일 내용 복사
    - Apps Script 에디터에 붙여넣기
 
-4. **WEBHOOK_URL 수정**:
+4. **WEBHOOK_URL 수정** (이미 설정된 실제 URL):
    ```javascript
-   const WEBHOOK_URL = "YOUR_LOGIC_APP_TRIGGER_URL_HERE";
+   const WEBHOOK_URL = "https://email2ado-logic-prod.azurewebsites.net/api/Email2ADO-HTTP/triggers/HTTP_Trigger/invoke?api-version=2022-05-01&sp=%2Ftriggers%2FHTTP_Trigger%2Frun&sv=1.0&sig=56zywRE5kOrh-MToeiBsltqA1YcxgKn3DDB8U7tocrY";
    ```
+   > ⚠️ 위 URL은 실제 운영 환경 URL입니다. 변경하지 마세요.
 
 5. **저장**: Ctrl+S
 

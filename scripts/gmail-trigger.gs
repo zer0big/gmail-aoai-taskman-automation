@@ -27,8 +27,9 @@
 /**
  * Email2ADO-HTTP Logic App 워크플로우 트리거 URL
  * Azure Portal > Logic App > Workflows > Email2ADO-HTTP > Overview > Workflow URL
+ * 트리거명: HTTP_Trigger
  */
-const WEBHOOK_URL = "https://email2ado-logic-prod.azurewebsites.net/api/Email2ADO-HTTP/triggers/When_a_HTTP_request_is_received/invoke?api-version=2022-05-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=YOUR_SIGNATURE_HERE";
+const WEBHOOK_URL = "https://email2ado-logic-prod.azurewebsites.net/api/Email2ADO-HTTP/triggers/HTTP_Trigger/invoke?api-version=2022-05-01&sp=%2Ftriggers%2FHTTP_Trigger%2Frun&sv=1.0&sig=56zywRE5kOrh-MToeiBsltqA1YcxgKn3DDB8U7tocrY";
 
 /**
  * 처리할 Gmail 레이블
