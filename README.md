@@ -11,13 +11,11 @@
 | 순서 | 문서 | 목적 | 소요시간 |
 |------|------|------|----------|
 | 1️⃣ | **README.md** (현재) | 전체 이해 + 빠른 시작 | 5분 |
-| 2️⃣ | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | 상세 아키텍처 설계 | 15분 |
-| 3️⃣ | [docs/DEPLOY.md](docs/DEPLOY.md) | 🆕 **Azure 배포 가이드** | 20분 |
-| 4️⃣ | [docs/GMAIL-SETUP.md](docs/GMAIL-SETUP.md) | Gmail OAuth 연결 설정 | 10분 |
-| 5️⃣ | [docs/GMAIL-INTEGRATION.md](docs/GMAIL-INTEGRATION.md) | 🆕 **Gmail 자동 연동 가이드** | 15분 |
-| 6️⃣ | [docs/LOCAL-TESTING.md](docs/LOCAL-TESTING.md) | 로컸 개발 환경 설정 | 10분 |
-| 📌 | [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | 🆕 **문제 해결 가이드** | 필요시 |
-| 📌 | [docs/GMAIL-FIELD-MAPPING.md](docs/GMAIL-FIELD-MAPPING.md) | Gmail 필드 매핑 참조 | 필요시 |
+| 2️⃣ | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | 상세 아키텍처 설계 (WAF) | 15분 |
+| 3️⃣ | [docs/DEPLOY.md](docs/DEPLOY.md) | Azure 배포 가이드 | 20분 |
+| 4️⃣ | [docs/GMAIL-INTEGRATION.md](docs/GMAIL-INTEGRATION.md) | **Gmail 자동 연동 (Apps Script)** | 15분 |
+| 5️⃣ | [docs/LOCAL-TESTING.md](docs/LOCAL-TESTING.md) | 로컬 개발 환경 설정 | 10분 |
+| 📌 | [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | 문제 해결 가이드 | 필요시 |
 | 📌 | [docs/CHANGELOG.md](docs/CHANGELOG.md) | 변경 이력 | 필요시 |
 
 ---
@@ -57,11 +55,10 @@ flowchart LR
 Email2ADO/
 ├── 📁 docs/                        # 📚 문서
 │   ├── ARCHITECTURE.md             # 아키텍처 설계 (WAF 기반)
-│   ├── DEPLOY.md                   # 🆕 Azure 배포 가이드
-│   ├── GMAIL-SETUP.md              # Gmail OAuth 설정
+│   ├── DEPLOY.md                   # Azure 배포 가이드
+│   ├── GMAIL-INTEGRATION.md        # Gmail 자동 연동 (Apps Script)
 │   ├── LOCAL-TESTING.md            # 로컬 개발 환경
-│   ├── TROUBLESHOOTING.md          # 🆕 문제 해결 가이드
-│   ├── GMAIL-FIELD-MAPPING.md      # Gmail 필드 매핑
+│   ├── TROUBLESHOOTING.md          # 문제 해결 가이드
 │   └── CHANGELOG.md                # 변경 이력
 │
 ├── 📁 src/                         # 소스 코드
@@ -199,11 +196,13 @@ func start
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                         보안 아키텍처 (v2.3.0)                        │
+│                         보안 아키텍처 (v2.4.0)                        │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                      │
-│   [외부 호출자] ──Easy Auth──▶ [Logic App HTTP Trigger]            │
-│                   (Entra ID)                                         │
+│   [Gmail] ──Filter──▶ [Apps Script] ──SAS──▶ [HTTP Trigger]        │
+│                        (5분 폴링)     (sig=...)                      │
+│                                                                      │
+│   ⚠️ Easy Auth: 비활성화 (Apps Script 호출 허용)                     │
 │                                                                      │
 │   [Logic App MSI] ──RBAC──▶ [Table Storage]                         │
 │                              (Storage Table Data Contributor)        │
@@ -213,8 +212,6 @@ func start
 │                                                                      │
 │   [Logic App MSI] ──RBAC──▶ [Key Vault] ──▶ [ADO PAT]              │
 │                              (Key Vault Secrets User)                │
-│                                                                      │
-│   [OAuth Token] ──API Connection──▶ [Gmail/Teams/ADO]               │
 │                                                                      │
 └─────────────────────────────────────────────────────────────────────┘
 ```

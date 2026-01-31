@@ -26,7 +26,35 @@ Email2ADO 시스템 운영 중 발생할 수 있는 문제와 해결 방법을 �
 
 **해결책**: 
 - ✅ **Email2ADO-HTTP** 워크플로우 사용 (HTTP Trigger 방식)
-- Gmail 트리거 대신 Power Automate 또는 외부 시스템에서 HTTP POST 호출
+- ✅ **Google Apps Script**로 Gmail 모니터링 → HTTP POST 호출
+
+**현재 구성** (v2.4.0):
+```
+Gmail → Filter (라벨) → Apps Script (5분 폴링) → HTTP Trigger → Logic App
+```
+
+상세 설정: [docs/GMAIL-INTEGRATION.md](GMAIL-INTEGRATION.md) 참조
+
+### 1.2 Apps Script 트리거 실패
+
+**증상**: Gmail에 라벨이 붙어도 Work Item이 생성되지 않음
+
+**진단 방법**:
+1. Apps Script 실행 기록 확인:
+   - script.google.com > Email2ADO-Trigger > Executions
+   
+2. 트리거 설정 확인:
+   - script.google.com > Triggers > `processNewEmails` (5분 주기)
+
+3. HTTP URL 확인:
+   ```javascript
+   // gmail-trigger.gs
+   const WEBHOOK_URL = "https://email2ado-logic-prod.azurewebsites.net/api/Email2ADO-HTTP/triggers/HTTP_Trigger/invoke?...";
+   ```
+
+**일반적인 해결책**:
+- SAS 서명 만료: Logic App에서 URL 재생성 → Apps Script 업데이트
+- 라벨 불일치: `SOURCE_LABEL`, `PROCESSED_LABEL` 확인
 
 ```powershell
 # 워크플로우 상태 확인
@@ -109,24 +137,22 @@ az keyvault show --name kv-zbtask-prod --query "properties.enableRbacAuthorizati
 2. RBAC 모드가 `true`인 경우 역할 할당 필요
 3. RBAC 모드가 `false`인 경우 Access Policy 추가 필요
 
-### 2.3 Easy Auth 인증 실패
+### 2.3 Easy Auth 인증 (v2.4.0 비활성화)
 
-**증상**: HTTP 401 Unauthorized
+> ⚠️ **v2.4.0**: Google Apps Script에서 HTTP 호출을 허용하기 위해 Easy Auth를 **비활성화**했습니다.
+> URL의 SAS 서명(`sig` 파라미터)으로 보안을 유지합니다.
 
-**해결책**:
-
-1. Bearer Token 확인:
+**현재 상태 확인**:
 ```powershell
-# 토큰 획득 (테스트용)
-$token = az account get-access-token `
-  --resource "api://c454a3ed-f41d-4180-82d0-4ab0704fc65c" `
-  --query accessToken -o tsv
-
-# 요청 시 Authorization 헤더 포함
-Invoke-RestMethod -Uri $triggerUrl -Method POST `
-  -Headers @{ Authorization = "Bearer $token" } `
-  -Body $payload -ContentType "application/json"
+az webapp auth show --name email2ado-logic-prod --resource-group rg-zb-taskman --query enabled
+# 결과: false (비활성화됨)
 ```
+
+**SAS URL 재생성 필요 시**:
+1. Azure Portal > Logic App > Workflows > Email2ADO-HTTP > Overview
+2. "Workflow URL" 재생성 클릭
+3. 새 URL을 `scripts/gmail-trigger.gs`의 `WEBHOOK_URL`에 업데이트
+4. Apps Script 재배포
 
 ---
 
@@ -389,4 +415,4 @@ az deployment group show `
 
 ---
 
-**작성**: 2026-01-30 | **버전**: v2.3.0
+**작성**: 2026-01-31 | **버전**: v2.4.0
