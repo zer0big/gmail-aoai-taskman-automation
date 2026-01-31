@@ -135,8 +135,10 @@ az rest --method GET \
 현재 운영 URL (gmail-trigger.gs에 설정됨):
 
 ```
-https://email2ado-logic-prod.azurewebsites.net/api/Email2ADO-HTTP/triggers/HTTP_Trigger/invoke?api-version=2022-05-01&sp=%2Ftriggers%2FHTTP_Trigger%2Frun&sv=1.0&sig=56zywRE5kOrh-MToeiBsltqA1YcxgKn3DDB8U7tocrY
+https://email2ado-logic-prod.azurewebsites.net/api/Email2ADO-HTTP/triggers/HTTP_Trigger/invoke?api-version=2022-05-01&sp=%2Ftriggers%2FHTTP_Trigger%2Frun&sv=1.0&sig=<YOUR_SAS_SIGNATURE>
 ```
+
+> ⚠️ **보안**: SAS 서명(`sig=...`)은 Azure Portal에서 확인하여 Apps Script Properties에 저장하세요.
 
 ---
 

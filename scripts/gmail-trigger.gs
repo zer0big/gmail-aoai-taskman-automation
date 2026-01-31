@@ -4,15 +4,19 @@
  * ============================================================================
  * 
  * 목적: Gmail에서 새 이메일 수신 시 Email2ADO-HTTP Logic App 워크플로우 호출
- * 버전: 1.0.0
+ * 버전: 1.1.0
  * 작성일: 2026-01-31
  * 
- * 📚 설정 방법:
+ * 📚 초기 설정 방법:
  * 1. Google Apps Script (https://script.google.com) 접속
  * 2. 새 프로젝트 생성
  * 3. 이 코드 붙여넣기
- * 4. WEBHOOK_URL을 실제 Logic App 트리거 URL로 변경
+ * 4. 🔐 setWebhookUrl() 함수 실행하여 URL 설정 (최초 1회)
  * 5. processNewEmails 함수에 트리거 설정 (5분 간격 권장)
+ * 
+ * 🔐 보안:
+ * - Webhook URL은 Script Properties에 암호화되어 저장됨
+ * - 코드에 민감 정보 하드코딩 금지
  * 
  * 📌 주의사항:
  * - Gmail 레이블 "Email2ADO" 생성 필요
@@ -21,15 +25,8 @@
  */
 
 // ============================================================================
-// 🔧 설정 (수정 필요)
+// 🔧 설정
 // ============================================================================
-
-/**
- * Email2ADO-HTTP Logic App 워크플로우 트리거 URL
- * Azure Portal > Logic App > Workflows > Email2ADO-HTTP > Overview > Workflow URL
- * 트리거명: HTTP_Trigger
- */
-const WEBHOOK_URL = "https://email2ado-logic-prod.azurewebsites.net/api/Email2ADO-HTTP/triggers/HTTP_Trigger/invoke?api-version=2022-05-01&sp=%2Ftriggers%2FHTTP_Trigger%2Frun&sv=1.0&sig=56zywRE5kOrh-MToeiBsltqA1YcxgKn3DDB8U7tocrY";
 
 /**
  * 처리할 Gmail 레이블
@@ -41,6 +38,71 @@ const SOURCE_LABEL = "Email2ADO";
  * 처리 완료 후 이동할 레이블
  */
 const PROCESSED_LABEL = "Email2ADO/Processed";
+
+/**
+ * Webhook URL을 Script Properties에서 가져옴
+ * @returns {string} Webhook URL
+ */
+function getWebhookUrl() {
+  const url = PropertiesService.getScriptProperties().getProperty('WEBHOOK_URL');
+  if (!url) {
+    throw new Error('❌ WEBHOOK_URL이 설정되지 않았습니다. setWebhookUrl() 함수를 먼저 실행하세요.');
+  }
+  return url;
+}
+
+/**
+ * 🔐 Webhook URL 설정 (최초 1회 실행 필요)
+ * 
+ * 사용법:
+ * 1. Apps Script 에디터에서 이 함수 선택
+ * 2. 실행 버튼 클릭
+ * 3. 프롬프트에 Logic App Workflow URL 입력
+ */
+function setWebhookUrl() {
+  const ui = SpreadsheetApp.getUi ? SpreadsheetApp.getUi() : null;
+  
+  // 프롬프트가 없는 환경(standalone script)에서는 Logger로 안내
+  if (!ui) {
+    Logger.log('========================================');
+    Logger.log('🔐 Webhook URL 설정 방법:');
+    Logger.log('1. File > Project properties > Script properties');
+    Logger.log('2. Add property: WEBHOOK_URL');
+    Logger.log('3. Value: Azure Logic App Workflow URL (트리거 URL)');
+    Logger.log('========================================');
+    Logger.log('');
+    Logger.log('또는 아래 코드를 직접 실행:');
+    Logger.log('PropertiesService.getScriptProperties().setProperty("WEBHOOK_URL", "YOUR_URL_HERE");');
+    return;
+  }
+  
+  const result = ui.prompt(
+    'Webhook URL 설정',
+    'Email2ADO-HTTP Logic App Workflow URL을 입력하세요:',
+    ui.ButtonSet.OK_CANCEL
+  );
+  
+  if (result.getSelectedButton() === ui.Button.OK) {
+    const url = result.getResponseText().trim();
+    if (url) {
+      PropertiesService.getScriptProperties().setProperty('WEBHOOK_URL', url);
+      ui.alert('✅ Webhook URL이 안전하게 저장되었습니다.');
+    }
+  }
+}
+
+/**
+ * 현재 설정된 URL 확인 (마스킹 처리)
+ */
+function checkWebhookUrl() {
+  try {
+    const url = getWebhookUrl();
+    const masked = url.substring(0, 50) + '...[MASKED]';
+    Logger.log(`✅ Webhook URL 설정됨: ${masked}`);
+  } catch (e) {
+    Logger.log(e.message);
+  }
+}
 
 // ============================================================================
 // 📧 메인 함수
@@ -155,7 +217,8 @@ function sendToLogicApp(message) {
   };
   
   try {
-    const response = UrlFetchApp.fetch(WEBHOOK_URL, options);
+    const webhookUrl = getWebhookUrl();
+    const response = UrlFetchApp.fetch(webhookUrl, options);
     const statusCode = response.getResponseCode();
     
     if (statusCode >= 200 && statusCode < 300) {
@@ -197,7 +260,8 @@ function testWebhook() {
   };
   
   try {
-    const response = UrlFetchApp.fetch(WEBHOOK_URL, options);
+    const webhookUrl = getWebhookUrl();
+    const response = UrlFetchApp.fetch(webhookUrl, options);
     Logger.log(`Status: ${response.getResponseCode()}`);
     Logger.log(`Response: ${response.getContentText()}`);
   } catch (e) {
