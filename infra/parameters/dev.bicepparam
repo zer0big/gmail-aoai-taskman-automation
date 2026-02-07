@@ -51,6 +51,6 @@ param tags = {
   Environment: 'dev'
   ManagedBy: 'Bicep'
   CreatedDate: '2026-01-29'
-  Owner: 'azure-mvp@zerobig.kr'
+  Owner: 'your-email@example.com'
   CostCenter: 'Email2ADO-Dev'
 }

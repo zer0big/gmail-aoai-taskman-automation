@@ -61,7 +61,7 @@ param tags = {
   Environment: 'prod'
   ManagedBy: 'Bicep'
   CreatedDate: '2026-01-29'
-  Owner: 'azure-mvp@zerobig.kr'
+  Owner: '<your-email>'
   CostCenter: 'Email2ADO'
-  GmailAccount: 'zerobig.kim@gmail.com'
+  GmailAccount: '<your-gmail-account>'
 }

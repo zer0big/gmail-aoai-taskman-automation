@@ -15,26 +15,26 @@
     "APP_KIND": "workflowApp",
 
     "// === Azure 기본 설정 ===": "",
-    "AZURE_SUBSCRIPTION_ID": "3864b016-4594-40ad-a96b-4a08ac96b537",
+    "AZURE_SUBSCRIPTION_ID": "<YOUR_SUBSCRIPTION_ID>",
     "AZURE_RESOURCE_GROUP": "rg-zb-taskman",
     "AZURE_LOCATION": "koreacentral",
 
     "// === Storage Account (Table Storage for Duplicate Check) ===": "",
-    "STORAGE_ACCOUNT_NAME": "stemail2adoprodxhum3jlfa",
+    "STORAGE_ACCOUNT_NAME": "<YOUR_STORAGE_ACCOUNT_NAME>",
     "TABLE_STORAGE_CONNECTION": "UseDevelopmentStorage=true",
     "TABLE_NAME": "ProcessedEmails",
 
     "// === Gmail API Connection (MSI 인증) ===": "",
     "// Gmail OAuth는 Azure Portal에서 API Connection 생성 후 OAuth 인증 필요": "",
-    "// 인증 계정: zerobig.kim@gmail.com": "",
+    "// 인증 계정: <your-gmail-account>": "",
     "// V1 Connection + MSI 인증 사용 (connectionRuntimeUrl 불필요)": "",
-    "GMAIL_ACCOUNT": "zerobig.kim@gmail.com",
+    "GMAIL_ACCOUNT": "<YOUR_GMAIL_ACCOUNT>",
     "GMAIL_CONNECTION_NAME": "gmail-prod",
 
     "// === Teams API Connection (MSI 인증) ===": "",
     "TEAMS_CONNECTION_NAME": "teams-prod",
-    "TEAMS_TEAM_ID": "b9367993-aa6c-40f3-93c5-e173a5fba3df",
-    "TEAMS_CHANNEL_ID": "19:749a50ad4a5648d9a691b040e4b6bef4@thread.tacv2",
+    "TEAMS_TEAM_ID": "<YOUR_TEAMS_TEAM_ID>",
+    "TEAMS_CHANNEL_ID": "<YOUR_TEAMS_CHANNEL_ID>",
 
     "// === ADO API Connection (MSI 인증) ===": "",
     "// Work Item 생성: OAuth API Connection 사용 (PAT 불필요)": "",
@@ -48,7 +48,7 @@
     "// === Azure OpenAI ===": "",
     "// 기존 리소스 사용 (rg-zb-taskman 리소스 그룹)": "",
     "// MSI 인증 시 cognitiveservices.azure.com 엔드포인트 사용": "",
-    "AZURE_OPENAI_ENDPOINT": "https://zb-taskman.cognitiveservices.azure.com/",
+    "AZURE_OPENAI_ENDPOINT": "<YOUR_OPENAI_ENDPOINT>",
     "AZURE_OPENAI_DEPLOYMENT_NAME": "gpt-4o",
     "AZURE_OPENAI_API_VERSION": "2024-06-01",
 

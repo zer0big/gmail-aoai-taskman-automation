@@ -626,7 +626,7 @@
               "location": "[parameters('location')]",
               "tags": "[parameters('tags')]",
               "properties": {
-                "displayName": "Gmail - zerobig.kim@gmail.com",
+                "displayName": "Gmail - your-account@gmail.com",
                 "api": {
                   "id": "[subscriptionResourceId('Microsoft.Web/locations/managedApis', parameters('location'), 'gmail')]"
                 }

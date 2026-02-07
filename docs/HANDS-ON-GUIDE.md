@@ -147,7 +147,7 @@ d-----         2026-01-31   12:00                src
 
 ## Step 1: Azure DevOps 설정
 
-### 1.1 Azure DevOps 조직 생성 (없는 경우)
+### 1-1. Azure DevOps 조직 생성 (없는 경우)
 
 1. **[dev.azure.com](https://dev.azure.com)** 접속
 2. **Start free** 클릭
@@ -156,7 +156,7 @@ d-----         2026-01-31   12:00                src
 5. 프로젝트 지역 선택 (예: `Korea`)
 6. **Continue** 클릭
 
-### 1.2 프로젝트 생성
+### 1-2. 프로젝트 생성
 
 1. Azure DevOps 홈 > **+ New project**
 2. 프로젝트 정보 입력:
@@ -166,7 +166,7 @@ d-----         2026-01-31   12:00                src
    - **Work item process**: Agile
 3. **Create** 클릭
 
-### 1.3 Personal Access Token (PAT) 생성
+### 1-3. Personal Access Token (PAT) 생성
 
 > ⚠️ **중요**: PAT는 한 번만 표시됩니다. 반드시 안전한 곳에 저장하세요!
 
@@ -188,7 +188,7 @@ d-----         2026-01-31   12:00                src
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
-### 1.4 설정 값 기록
+### 1-4. 설정 값 기록
 
 다음 단계에서 사용할 값을 메모장에 기록합니다:
 
@@ -206,7 +206,7 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 > 📌 **배경**: Microsoft는 2025년 12월부로 Incoming Webhook을 지원 중단했습니다.  
 > Power Automate Workflow를 사용하여 Teams 알림을 구현합니다.
 
-### 2.1 Teams 채널 준비
+### 2-1. Teams 채널 준비
 
 1. **Microsoft Teams** 앱 열기
 2. 알림을 받을 팀 선택 (없으면 새 팀 생성)
@@ -216,7 +216,7 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
    - **채널 설명**: 이메일 자동화 알림 채널
    - **만들기** 클릭
 
-### 2.2 Workflow 생성
+### 2-2. Workflow 생성
 
 1. 생성한 채널로 이동
 2. 채널 이름 옆 **⋯** (더보기) 클릭
@@ -226,7 +226,7 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 6. **다음** 클릭
 7. 게시할 채널 확인 후 **워크플로 추가** 클릭
 
-### 2.3 Workflow URL 복사
+### 2-3. Workflow URL 복사
 
 1. Workflow 생성 완료 화면에서 **URL 복사** 클릭
 2. URL 형식 확인:
@@ -234,7 +234,7 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
    https://prod-xx.westus.logic.azure.com:443/workflows/xxxxxxxx/triggers/manual/paths/invoke?api-version=2016-06-01&sp=...
    ```
 
-### 2.4 설정 값 기록
+### 2-4. 설정 값 기록
 
 ```
 [Teams Workflow 설정]

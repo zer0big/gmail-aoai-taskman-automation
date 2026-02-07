@@ -191,7 +191,7 @@ Basic base64(:PAT)  # 콜론(:) 앞에 사용자명 없이 PAT만 사용
 
 ### 문제 상황
 ```
-TF401444: Please sign-in at least once as dddd4071-e969-4d36-aa5f-091e40ad53c1
+TF401444: Please sign-in at least once as <managed-identity-object-id>
 또는 HTTP 401 Unauthorized
 ```
 
@@ -602,7 +602,7 @@ az rest --method GET `
 ---
 
 ## 👥 기여자
-- 김영대 (azure-mvp@zerobig.kr)
+- 김영대 (your-email@example.com)
 
 ## 📄 라이선스
 Internal Use Only

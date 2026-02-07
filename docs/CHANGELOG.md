@@ -35,36 +35,6 @@
 
 ---
 
-## [2.5.0] - 2026-02-07 (문서 현행화 + LinkedIn 제외 필터)
-
-### 🎯 목표 달성
-- ✅ LinkedIn 도메인 발신 메일 자동 제외 (Work Item 생성 방지)
-- ✅ 전체 산출물 현행화 재검토 및 보완
-
-### 추가됨 (Added)
-- 2026-02-07: EXCLUDED_DOMAINS 상수 추가 (linkedin.com 외 2개 도메인)
-- 2026-02-07: isExcludedSender() 함수 추가 (도메인 기반 필터링)
-- 2026-02-07: processNewEmails() 메시지 루프에 제외 필터 로직 추가
-- 2026-02-07: docs/GMAIL-INTEGRATION.md Section 5 - LinkedIn 업데이트 가이드 추가
-
-### 변경됨 (Changed)
-- 2026-02-07: scripts/gmail-trigger.gs v1.1.0 → v1.2.0
-- 2026-02-07: README.md 버전 v2.4.0 → v2.5.0, LinkedIn 제한사항 추가
-- 2026-02-07: ARCHITECTURE.md 폴링 간격 오류 수정 (1분 → 5분)
-- 2026-02-07: DEPLOY.md 깨진 링크 수정 (GMAIL-SETUP → GMAIL-INTEGRATION)
-- 2026-02-07: TROUBLESHOOTING.md WEBHOOK_URL 설명 Script Properties 방식으로 수정
-- 2026-02-07: TROUBLESHOOTING.md 중복 섹션 번호(1.2) 수정
-- 2026-02-07: LOCAL-TESTING.md 민감정보(Subscription ID, Teams ID) 플레이스홀더 교체
-
-### 보안 (Security)
-- 2026-02-07: LOCAL-TESTING.md에서 Subscription ID, Teams Group/Channel ID 제거
-
-### 배포 정보
-- **Apps Script 버전**: v1.2.0
-- **제외 도메인**: linkedin.com, e.linkedin.com, linkedin.mktgcenter.com
-
----
-
 ## [2.4.0] - 2026-01-31 (Phase 11: Gmail 자동 연동 ✅ 완료)
 
 ### 🎯 목표 달성
@@ -215,9 +185,9 @@
 ### 배포 정보
 - **리소스 그룹**: rg-zb-taskman
 - **Logic App**: email2ado-logic-prod
-- **Storage Account**: stemail2adoprodxhum3jlfa
+- **Storage Account**: <your-storage-account-name>
 - **API Connections**: gmail-prod, teams-prod, visualstudioteamservices-prod
-- **Azure OpenAI**: zb-taskman (gpt-4o)
+- **Azure OpenAI**: <your-openai-resource> (gpt-4o)
 
 ---
 

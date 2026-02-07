@@ -2,7 +2,7 @@
 
 > **한 줄 요약**: Gmail 메일 수신 → AI 분석(GPT-4o) → Azure DevOps Work Item 자동 생성 → Teams 알림
 
-**버전**: v2.5.0 | **최종 업데이트**: 2026-02-07 | **담당자**: 김영대 (azure-mvp@zerobig.kr) | **상태**: ✅ 운영 중
+**버전**: v2.5.0 | **최종 업데이트**: 2026-02-07 | **담당자**: 김영대 (your-email@example.com) | **상태**: ✅ 운영 중
 
 ---
 
@@ -105,8 +105,8 @@ Email2ADO/
 |------------|------|------|----------|
 | Resource Group | `rg-zb-taskman` | 리소스 그룹 | - |
 | Logic App Standard | `email2ado-logic-prod` | 워크플로우 실행 | **MSI** |
-| Storage Account | `stemail2adoprodxhum3jlfa` | Table Storage (중복 방지) | **MSI** |
-| Azure OpenAI | `zb-taskman` | GPT-4o AI 분석 | **MSI** |
+| Storage Account | `<your-storage-account-name>` | Table Storage (중복 방지) | **MSI** |
+| Azure OpenAI | `<your-openai-resource>` | GPT-4o AI 분석 | **MSI** |
 | Key Vault | `kv-zbtask-prod` | ADO PAT 보안 저장 | **MSI** |
 | App Registration | `Email2ADO-HTTP-Auth` | Easy Auth 인증 | Entra ID |
 | API Connection | `gmail-prod` | Gmail 연결 | OAuth 2.0 |

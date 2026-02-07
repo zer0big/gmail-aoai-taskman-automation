@@ -4,7 +4,7 @@
 // 목적: Azure Logic Apps Standard 기반 이메일 자동화 시스템의 모든 리소스 배포
 // 버전: v2.4.0
 // 작성일: 2026-01-31
-// 담당자: 김영대 (azure-mvp@zerobig.kr)
+// 담당자: 김영대 (your-email@example.com)
 // 
 // 📚 참조 문서:
 // - Logic Apps: https://learn.microsoft.com/en-us/azure/logic-apps/

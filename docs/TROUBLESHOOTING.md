@@ -320,7 +320,7 @@ The table specified does not exist
 1. 테이블 존재 확인:
 ```powershell
 az storage table list `
-  --account-name stemail2adoprodxhum3jlfa `
+  --account-name <your-storage-account-name> `
   --auth-mode login `
   --query "[].name" -o tsv
 ```
@@ -329,7 +329,7 @@ az storage table list `
 ```powershell
 az storage table create `
   --name ProcessedEmails `
-  --account-name stemail2adoprodxhum3jlfa `
+  --account-name <your-storage-account-name> `
   --auth-mode login
 ```
 
@@ -344,7 +344,7 @@ az storage table create `
 # Table Storage 데이터 조회
 az storage entity query `
   --table-name ProcessedEmails `
-  --account-name stemail2adoprodxhum3jlfa `
+  --account-name <your-storage-account-name> `
   --auth-mode login `
   --query "items[*].{RowKey:RowKey, Subject:Subject, Status:Status}" -o table
 ```
@@ -411,7 +411,7 @@ az deployment group show `
 
 1. **Azure Support**: Azure Portal → Help + support
 2. **ADO Work Item**: https://dev.azure.com/azure-mvp/ZBTaskManager/_workitems
-3. **담당자**: azure-mvp@zerobig.kr
+3. **담당자**: your-email@example.com
 
 ---
 

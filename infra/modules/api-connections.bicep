@@ -42,7 +42,7 @@ param adoConnectionName string
 // 📧 Gmail API Connection (V1)
 // ============================================================================
 // 📌 Gmail 트리거 요구사항:
-//    - 소비자 계정 (@gmail.com): zerobig.kim@gmail.com
+//    - 소비자 계정 (@gmail.com): <your-gmail-account>
 //    - 배포 후 Azure Portal에서 OAuth 승인 필요
 // 
 // ⚠️ 배포 후 필수 작업:
@@ -55,7 +55,7 @@ resource gmailConnection 'Microsoft.Web/connections@2016-06-01' = {
   location: location
   tags: tags
   properties: {
-    displayName: 'Gmail - zerobig.kim@gmail.com'
+    displayName: 'Gmail - ${gmailConnectionName}'
     api: {
       id: subscriptionResourceId('Microsoft.Web/locations/managedApis', location, 'gmail')
     }

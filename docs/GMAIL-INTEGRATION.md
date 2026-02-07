@@ -324,7 +324,7 @@ const EXCLUDED_DOMAINS = [
 | `messageId` | Gmail 메시지 ID (prefix: gmail-) | `gmail-19c125c8cdaf4de9` |
 | `subject` | 이메일 제목 | `MVP TEST` |
 | `body` | 본문 (최대 5000자) | `안녕하세요...` |
-| `from` | 발신자 이메일 | `zerobig.kim@gmail.com` |
+| `from` | 발신자 이메일 | `your-account@gmail.com` |
 | `receivedDateTime` | 수신 시간 (ISO 8601) | `2026-01-31T04:43:00Z` |
 | `source` | 소스 식별자 | `Gmail-AppsScript` |
 
@@ -398,7 +398,7 @@ az webapp auth show --name email2ado-logic-prod --resource-group rg-zb-taskman -
 3. **Table Storage 확인**:
    ```powershell
    az storage entity query --table-name ProcessedEmails \
-     --account-name stemail2adoprodxhum3jlfa \
+     --account-name <your-storage-account-name> \
      --query "items[-3:]" -o table
    ```
 
