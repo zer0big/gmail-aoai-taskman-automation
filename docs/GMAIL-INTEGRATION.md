@@ -15,6 +15,8 @@
 | **HTTP Trigger** | HTTP_Trigger |
 | **Logic App** | email2ado-logic-prod |
 | **워크플로우** | Email2ADO-HTTP |
+| **스크립트 버전** | v1.2.0 (LinkedIn 도메인 제외 필터 적용) |
+| **제외 도메인** | linkedin.com, e.linkedin.com, linkedin.mktgcenter.com |
 
 ---
 
@@ -24,9 +26,10 @@
 2. [V1 커넥터 제한사항](#2-v1-커넥터-제한사항)
 3. [현재 해결책: Google Apps Script](#3-현재-해결책-google-apps-script)
 4. [Gmail 필터 설정](#4-gmail-필터-설정)
-5. [필드 매핑 참조](#5-필드-매핑-참조)
-6. [대안 옵션](#6-대안-옵션)
-7. [문제 해결](#7-문제-해결)
+5. [LinkedIn 도메인 제외 필터 (v1.2.0)](#5-linkedin-도메인-제외-필터-v120)
+6. [필드 매핑 참조](#6-필드-매핑-참조)
+7. [대안 옵션](#7-대안-옵션)
+8. [문제 해결](#8-문제-해결)
 
 ---
 
@@ -218,7 +221,101 @@ https://email2ado-logic-prod.azurewebsites.net/api/Email2ADO-HTTP/triggers/HTTP_
 
 ---
 
-## 5. 필드 매핑 참조
+## 5. LinkedIn 도메인 제외 필터 (v1.2.0)
+
+> **적용일**: 2026-02-07 | **스크립트 버전**: v1.2.0
+
+LinkedIn에서 발송되는 알림 메일(초대, 뉴스레터 등)이 Work Item으로 생성되는 것을 방지하기 위해 도메인 기반 제외 필터가 추가되었습니다.
+
+### 5.1 제외 대상 도메인
+
+| 도메인 | 발송 유형 |
+|--------|----------|
+| linkedin.com | 일반 알림 |
+| .linkedin.com | 이메일 마케팅/뉴스레터 |
+| linkedin.mktgcenter.com | 마케팅 센터 |
+
+### 5.2 Google Apps Script 업데이트 절차
+
+> ⚠️ Google Apps Script는 Google 클라우드에서 실행되므로, Git 소스 수정만으로는 반영되지 않습니다.  
+> 아래 절차에 따라 **수동으로 1회 업데이트**해야 합니다.
+
+#### Step 1: 최신 스크립트 소스 열기
+
+`
+GitHub: https://github.com/zer0big/gmail-aoai-taskman-automation
+파일:   scripts/gmail-trigger.gs
+`
+
+1. 위 GitHub 저장소에서 scripts/gmail-trigger.gs 파일을 열고
+2. **"Raw" 버튼** 클릭 → 전체 내용 복사 (Ctrl+A → Ctrl+C)
+
+#### Step 2: Google Apps Script 편집기 접속
+
+1. 브라우저에서 **[script.google.com](https://script.google.com)** 접속
+2. Google 계정으로 로그인
+3. 기존 프로젝트 **"Email2ADO-Trigger"** 클릭하여 열기
+
+#### Step 3: 코드 교체
+
+1. 편집기에서 기존 코드 **전체 선택** (Ctrl+A)
+2. **붙여넣기** (Ctrl+V) — Step 1에서 복사한 새 코드로 교체
+3. **저장** (Ctrl+S)
+
+> 💡 기존 코드를 전체 교체하는 방식이므로, 이전에 추가한 개인 수정사항이 있다면 미리 백업하세요.
+
+#### Step 4: 정상 동작 확인
+
+1. 편집기 상단의 **함수 선택 드롭다운**에서 processNewEmails 선택
+2. **▶ 실행** 버튼 클릭
+3. **View > Logs** 확인:
+   - LinkedIn 메일이 있는 경우:
+     `
+     ⏭️ 제외 도메인 건너뛰: Your network update (from: "LinkedIn" <messages-noreply@linkedin.com>)
+     `
+   - LinkedIn 메일이 없는 경우: 기존과 동일하게 정상 처리
+
+#### Step 5: 트리거 확인 (변경 불필요)
+
+기존 5분 간격 트리거가 그대로 동작합니다. 별도의 트리거 재설정은 필요 없습니다.
+
+1. 좌측 **⏰ 트리거** 메뉴 클릭
+2. processNewEmails 트리거가 존재하는지 확인
+3. 상태가 **"사용 설정됨"**인지 확인
+
+### 5.3 제외 도메인 추가/변경 방법
+
+향후 다른 도메인도 제외하려면 EXCLUDED_DOMAINS 배열에 항목만 추가하면 됩니다:
+
+`javascript
+const EXCLUDED_DOMAINS = [
+  "linkedin.com",
+  "e.linkedin.com",
+  "linkedin.mktgcenter.com",
+  "noreply.example.com"     // ← 새 도메인 추가
+];
+`
+
+변경 후 반드시:
+1. Git 저장소에 커밋/푸시
+2. Google Apps Script 편집기에서 코드 교체 (위 Step 1~4 반복)
+
+### 5.4 동작 원리
+
+`
+┌─────────────┐     ┌──────────────────────┐     ┌─────────────────────┐
+│   Gmail     │     │  Apps Script         │     │  Logic App          │
+│   Inbox     │────▶│  processNewEmails()  │────▶│  Email2ADO-HTTP     │
+│             │     │                      │     │                     │
+│ ✉ Azure 메일│     │  ✅ → sendToLogicApp │     │  → AI 분석          │
+│ ✉ MVP 메일  │     │  ✅ → sendToLogicApp │     │  → Work Item 생성   │
+│ ✉ LinkedIn  │     │  ❌ → SKIP (제외됨)  │     │                     │
+└─────────────┘     └──────────────────────┘     └─────────────────────┘
+`
+
+---
+
+## 6. 필드 매핑 참조
 
 ### Apps Script → Logic App 페이로드
 
@@ -243,7 +340,7 @@ https://email2ado-logic-prod.azurewebsites.net/api/Email2ADO-HTTP/triggers/HTTP_
 
 ---
 
-## 6. 대안 옵션
+## 7. 대안 옵션
 
 ### Option B: Power Automate
 
@@ -266,9 +363,9 @@ Gmail 트리거 → HTTP 액션 (Logic App 호출)
 
 ---
 
-## 7. 문제 해결
+## 8. 문제 해결
 
-### 7.1 Apps Script 권한 오류
+### 8.1 Apps Script 권한 오류
 
 **증상**: `Exception: You do not have permission to call UrlFetchApp.fetch`
 
@@ -276,7 +373,7 @@ Gmail 트리거 → HTTP 액션 (Logic App 호출)
 1. 트리거 삭제 후 재생성
 2. `testWebhook` 함수 수동 실행으로 권한 재승인
 
-### 7.2 HTTP 401 Unauthorized
+### 8.2 HTTP 401 Unauthorized
 
 **증상**: Logic App 호출 시 401 오류
 
@@ -292,7 +389,7 @@ az webapp auth show --name email2ado-logic-prod --resource-group rg-zb-taskman -
 # 결과: false (비활성화됨)
 ```
 
-### 7.3 이메일이 처리되지 않음
+### 8.3 이메일이 처리되지 않음
 
 **확인 순서**:
 
@@ -305,7 +402,7 @@ az webapp auth show --name email2ado-logic-prod --resource-group rg-zb-taskman -
      --query "items[-3:]" -o table
    ```
 
-### 7.4 "처리할 새 이메일 없음" 로그
+### 8.4 "처리할 새 이메일 없음" 로그
 
 **원인**: `Email2ADO` 레이블이 있는 이메일이 없음
 
@@ -327,6 +424,7 @@ az webapp auth show --name email2ado-logic-prod --resource-group rg-zb-taskman -
 
 | 날짜 | 버전 | 변경 내용 |
 |------|------|----------|
+| 2026-02-07 | v1.2.0 | LinkedIn 도메인 제외 필터 추가 (linkedin.com 외 2개 도메인) |
 | 2026-01-31 | v2.4.0 | Gmail 자동 연동 완료, E2E 테스트 성공 |
 | 2026-01-31 | - | Easy Auth 비활성화, HTTP_Trigger URL 수정 |
 | 2026-01-31 | - | Gmail 필터 설정 (Microsoft OR MVP) |
