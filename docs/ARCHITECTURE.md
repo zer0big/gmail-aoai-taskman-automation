@@ -134,7 +134,7 @@ Scope_Notification           Scope_Error_Handler
 |------|----------|------|
 | **Stateful 워크플로우** | 장시간 실행 지원, 상태 지속 | 안정성 |
 | **Chunked Transfer** | 대용량 데이터 스트리밍 처리 | 메모리 효율 |
-| **1분 폴링** | Gmail 트리거 간격 최적화 | 적시성 vs 비용 균형 |
+| **5분 폴링** | Apps Script Gmail 모니터링 간격 | 적시성 vs 비용 균형 |
 | **Null 안전 처리** | `coalesce()` 함수로 null 방지 | 런타임 오류 감소 |
 
 ## 📊 워크플로우 상세 설계
@@ -268,6 +268,8 @@ ADO PAT는 App Settings Key Vault Reference가 아닌, 워크플로우 실행 �
 
 | 버전 | 날짜 | 작성자 | 내용 |
 |------|------|--------|------|
+| 2.5.0 | 2026-02-07 | azure-mvp | LinkedIn 도메인 제외 필터, 문서 현행화 |
+| 2.5.0 | 2026-02-07 | azure-mvp | LinkedIn 도메인 제외 필터, 문서 현행화 |
 | 2.4.0 | 2026-01-31 | azure-mvp | Phase 11: Gmail 자동 연동 (Apps Script), Easy Auth 비활성화 |
 | 2.3.0 | 2026-01-30 | azure-mvp | Phase 9: Key Vault 런타임 조회, Easy Auth, secureData 마스킹 |
 | 2.2.1 | 2026-01-30 | azure-mvp | Phase 8: Email2ADO-HTTP 워크플로우, Power Automate Workflow 연동 |

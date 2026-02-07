@@ -63,7 +63,7 @@ az rest --method GET `
   | ConvertFrom-Json | ForEach-Object { $_.value | Select-Object name, @{n='health';e={$_.properties.health.state}} }
 ```
 
-### 1.2 워크플로우 실행 실패
+### 1.3 워크플로우 실행 실패
 
 **진단 방법**:
 
@@ -415,4 +415,4 @@ az deployment group show `
 
 ---
 
-**작성**: 2026-01-31 | **버전**: v2.4.0
+**작성**: 2026-01-31 | **최종 수정**: 2026-02-07 | **버전**: v2.5.0

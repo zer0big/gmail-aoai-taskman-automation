@@ -110,7 +110,7 @@ Copy-Item local.settings.template.json local.settings.json
     "APP_KIND": "workflowApp",
     
     // Azure 구독 정보
-    "AZURE_SUBSCRIPTION_ID": "3864b016-4594-40ad-a96b-4a08ac96b537",
+    "AZURE_SUBSCRIPTION_ID": "<YOUR_SUBSCRIPTION_ID>",
     "AZURE_RESOURCE_GROUP": "rg-email2ado-dev",
     
     // Table Storage (로컬에서는 Azurite 사용)
@@ -118,8 +118,8 @@ Copy-Item local.settings.template.json local.settings.json
     "TABLE_NAME": "ProcessedEmails",
     
     // Teams 정보 (AutoTaskMan 채널)
-    "TEAMS_TEAM_ID": "b9367993-aa6c-40f3-93c5-e173a5fba3df",
-    "TEAMS_CHANNEL_ID": "19:749a50ad4a5648d9a691b040e4b6bef4@thread.tacv2",
+    "TEAMS_TEAM_ID": "<YOUR_TEAMS_TEAM_ID>",
+    "TEAMS_CHANNEL_ID": "<YOUR_TEAMS_CHANNEL_ID>",
     
     // Azure OpenAI (기존 리소스)
     "AZURE_OPENAI_ENDPOINT": "https://zb-taskman.openai.azure.com/",

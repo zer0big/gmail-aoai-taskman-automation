@@ -387,8 +387,8 @@ Invoke-RestMethod -Uri $triggerUrl -Method POST -Body $testPayload -ContentType 
 - [README.md](../README.md) - 프로젝트 개요
 - [ARCHITECTURE.md](ARCHITECTURE.md) - 아키텍처 설계
 - [TROUBLESHOOTING.md](TROUBLESHOOTING.md) - 문제 해결
-- [GMAIL-SETUP.md](GMAIL-SETUP.md) - Gmail 설정
+- [GMAIL-INTEGRATION.md](GMAIL-INTEGRATION.md) - Gmail 자동 연동
 
 ---
 
-**작성**: 2026-01-30 | **버전**: v2.3.0
+**작성**: 2026-01-30 | **최종 수정**: 2026-02-07 | **버전**: v2.5.0
