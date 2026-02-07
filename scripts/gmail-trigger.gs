@@ -4,7 +4,9 @@
  * ============================================================================
  * 
  * 목적: Gmail에서 새 이메일 수신 시 Email2ADO-HTTP Logic App 워크플로우 호출
- * 버전: 1.1.0
+ * 버전: 1.2.0
+ * 수정일: 2026-02-07
+ * 변경: linkedin.com 도메인 발신 메일 제외 필터 추가
  * 작성일: 2026-01-31
  * 
  * 📚 초기 설정 방법:
@@ -38,6 +40,16 @@ const SOURCE_LABEL = "Email2ADO";
  * 처리 완료 후 이동할 레이블
  */
 const PROCESSED_LABEL = "Email2ADO/Processed";
+
+/**
+ * 제외할 발신자 도메인 목록
+ * 이 도메인에서 발송된 이메일은 처리하지 않고 건너뜀
+ */
+const EXCLUDED_DOMAINS = [
+  "linkedin.com",
+  "e.linkedin.com",
+  "linkedin.mktgcenter.com"
+];
 
 /**
  * Webhook URL을 Script Properties에서 가져옴
@@ -149,6 +161,12 @@ function processNewEmails() {
         // 이미 읽은 메시지는 건너뛰기 (선택적)
         // if (message.isRead()) continue;
         
+        // 제외 도메인 필터링 (linkedin.com 등)
+        const sender = message.getFrom();
+        if (isExcludedSender(sender)) {
+          Logger.log('⏭️ 제외 도메인 건너뛰: ' + message.getSubject() + ' (from: ' + sender + ')');
+          continue;
+        }
         try {
           const result = sendToLogicApp(message);
           
@@ -179,6 +197,17 @@ function processNewEmails() {
 // ============================================================================
 // 🔗 Logic App 호출
 // ============================================================================
+
+/**
+ * 제외 대상 발신자인지 확인
+ * @param {string} from - 발신자 정보
+ * @returns {boolean} 제외 대상이면 true
+ */
+function isExcludedSender(from) {
+  const emailMatch = from.match(/<(.+)>/);
+  const senderEmail = (emailMatch ? emailMatch[1] : from).toLowerCase();
+  return EXCLUDED_DOMAINS.some(domain => senderEmail.endsWith('@' + domain) || senderEmail.endsWith('.' + domain));
+}
 
 /**
  * Email2ADO-HTTP Logic App에 이메일 데이터 전송
