@@ -17,7 +17,6 @@
 | 5️⃣ | [docs/EXCLUSION-LIST.md](docs/EXCLUSION-LIST.md) | **이메일 제외 목록 관리** | 5분 |
 | 6️⃣ | [docs/LOCAL-TESTING.md](docs/LOCAL-TESTING.md) | 로컬 개발 환경 설정 | 10분 |
 | 📌 | [docs/HANDS-ON-GUIDE.md](docs/HANDS-ON-GUIDE.md) | **핸즈온 구축 가이드** | 2~3시간 |
-| 📌 | [docs/HANDS-ON-GUIDE.md](docs/HANDS-ON-GUIDE.md) | **핸즈온 구축 가이드** | 2~3시간 |
 | 📌 | [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | 문제 해결 가이드 | 필요시 |
 | 📌 | [docs/CHANGELOG.md](docs/CHANGELOG.md) | 변경 이력 | 필요시 |
 

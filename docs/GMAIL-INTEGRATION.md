@@ -234,7 +234,7 @@ LinkedIn에서 발송되는 알림 메일(초대, 뉴스레터 등)이 Work Item
 | 도메인 | 발송 유형 |
 |--------|----------|
 | linkedin.com | 일반 알림 |
-| .linkedin.com | 이메일 마케팅/뉴스레터 |
+| e.linkedin.com | 이메일 마케팅/뉴스레터 |
 | linkedin.mktgcenter.com | 마케팅 센터 |
 
 ### 5.2 Google Apps Script 업데이트 절차
@@ -401,7 +401,7 @@ Gmail 트리거 → HTTP 액션 (Logic App 호출)
 
 ## 9. 문제 해결
 
-### 8.1 Apps Script 권한 오류
+### 9.1 Apps Script 권한 오류
 
 **증상**: `Exception: You do not have permission to call UrlFetchApp.fetch`
 
@@ -409,7 +409,7 @@ Gmail 트리거 → HTTP 액션 (Logic App 호출)
 1. 트리거 삭제 후 재생성
 2. `testWebhook` 함수 수동 실행으로 권한 재승인
 
-### 8.2 HTTP 401 Unauthorized
+### 9.2 HTTP 401 Unauthorized
 
 **증상**: Logic App 호출 시 401 오류
 
@@ -425,7 +425,7 @@ az webapp auth show --name email2ado-logic-prod --resource-group rg-zb-taskman -
 # 결과: false (비활성화됨)
 ```
 
-### 8.3 이메일이 처리되지 않음
+### 9.3 이메일이 처리되지 않음
 
 **확인 순서**:
 
@@ -438,7 +438,7 @@ az webapp auth show --name email2ado-logic-prod --resource-group rg-zb-taskman -
      --query "items[-3:]" -o table
    ```
 
-### 8.4 "처리할 새 이메일 없음" 로그
+### 9.4 "처리할 새 이메일 없음" 로그
 
 **원인**: `Email2ADO` 레이블이 있는 이메일이 없음
 
