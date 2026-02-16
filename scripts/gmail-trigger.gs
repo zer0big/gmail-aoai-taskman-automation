@@ -4,9 +4,9 @@
  * ============================================================================
  * 
  * 목적: Gmail에서 새 이메일 수신 시 Email2ADO-HTTP Logic App 워크플로우 호출
- * 버전: 1.2.0
- * 수정일: 2026-02-07
- * 변경: linkedin.com 도메인 발신 메일 제외 필터 추가
+ * 버전: 1.3.0
+ * 수정일: 2026-02-16
+ * 변경: 특정 발신자 주소 제외 필터 추가 (pluralsight, MSSecurity, pgievent)
  * 작성일: 2026-01-31
  * 
  * 📚 초기 설정 방법:
@@ -49,6 +49,16 @@ const EXCLUDED_DOMAINS = [
   "linkedin.com",
   "e.linkedin.com",
   "linkedin.mktgcenter.com"
+];
+
+/**
+ * 제외할 특정 발신자 이메일 주소 목록
+ * 이 주소에서 발송된 이메일은 처리하지 않고 건너뜀
+ */
+const EXCLUDED_SENDERS = [
+  "no-reply@appmail.pluralsight.com",
+  "mssecurity-noreply@microsoft.com",
+  "pgievent@microsoft.com"
 ];
 
 /**
@@ -164,7 +174,7 @@ function processNewEmails() {
         // 제외 도메인 필터링 (linkedin.com 등)
         const sender = message.getFrom();
         if (isExcludedSender(sender)) {
-          Logger.log('⏭️ 제외 도메인 건너뛰: ' + message.getSubject() + ' (from: ' + sender + ')');
+          Logger.log('⏭️ 제외 발신자 건너뛰기: ' + message.getSubject() + ' (from: ' + sender + ')');
           continue;
         }
         try {
@@ -199,14 +209,20 @@ function processNewEmails() {
 // ============================================================================
 
 /**
- * 제외 대상 발신자인지 확인
+ * 제외 대상 발신자인지 확인 (도메인 또는 특정 주소)
  * @param {string} from - 발신자 정보
  * @returns {boolean} 제외 대상이면 true
  */
 function isExcludedSender(from) {
   const emailMatch = from.match(/<(.+)>/);
   const senderEmail = (emailMatch ? emailMatch[1] : from).toLowerCase();
-  return EXCLUDED_DOMAINS.some(domain => senderEmail.endsWith('@' + domain) || senderEmail.endsWith('.' + domain));
+  
+  // 도메인 기반 제외 체크
+  const domainExcluded = EXCLUDED_DOMAINS.some(domain => senderEmail.endsWith('@' + domain) || senderEmail.endsWith('.' + domain));
+  if (domainExcluded) return true;
+  
+  // 특정 발신자 주소 제외 체크
+  return EXCLUDED_SENDERS.some(addr => senderEmail === addr.toLowerCase());
 }
 
 /**
