@@ -4,9 +4,9 @@
  * ============================================================================
  * 
  * 목적: Gmail에서 새 이메일 수신 시 Email2ADO-HTTP Logic App 워크플로우 호출
- * 버전: 1.3.0
+ * 버전: 1.4.0
  * 수정일: 2026-02-16
- * 변경: 특정 발신자 주소 제외 필터 추가 (pluralsight, MSSecurity, pgievent)
+ * 변경: 발신자 4건 추가 (cncf, microsoft email, linuxfoundation) + 제목 키워드 제외 필터 추가
  * 작성일: 2026-01-31
  * 
  * 📚 초기 설정 방법:
@@ -58,7 +58,19 @@ const EXCLUDED_DOMAINS = [
 const EXCLUDED_SENDERS = [
   "no-reply@appmail.pluralsight.com",
   "mssecurity-noreply@microsoft.com",
-  "pgievent@microsoft.com"
+  "pgievent@microsoft.com",
+  "no-reply@cncf.io",
+  "replyto@email.microsoft.com",
+  "email@email.microsoft.com",
+  "no-reply@linuxfoundation.org"
+];
+
+/**
+ * 제외할 이메일 제목 키워드 목록
+ * 제목에 이 키워드가 포함된 이메일은 처리하지 않고 건너뜀
+ */
+const EXCLUDED_SUBJECT_KEYWORDS = [
+  "[광고]"
 ];
 
 /**
@@ -171,10 +183,17 @@ function processNewEmails() {
         // 이미 읽은 메시지는 건너뛰기 (선택적)
         // if (message.isRead()) continue;
         
-        // 제외 도메인 필터링 (linkedin.com 등)
+        // 제외 발신자 필터링 (도메인 + 주소)
         const sender = message.getFrom();
         if (isExcludedSender(sender)) {
           Logger.log('⏭️ 제외 발신자 건너뛰기: ' + message.getSubject() + ' (from: ' + sender + ')');
+          continue;
+        }
+        
+        // 제외 제목 키워드 필터링
+        const subject = message.getSubject();
+        if (isExcludedSubject(subject)) {
+          Logger.log('⏭️ 제외 제목 건너뛰기: ' + subject + ' (from: ' + sender + ')');
           continue;
         }
         try {
@@ -223,6 +242,16 @@ function isExcludedSender(from) {
   
   // 특정 발신자 주소 제외 체크
   return EXCLUDED_SENDERS.some(addr => senderEmail === addr.toLowerCase());
+}
+
+/**
+ * 제외 대상 제목인지 확인 (키워드 포함 여부)
+ * @param {string} subject - 이메일 제목
+ * @returns {boolean} 제외 대상이면 true
+ */
+function isExcludedSubject(subject) {
+  if (!subject) return false;
+  return EXCLUDED_SUBJECT_KEYWORDS.some(keyword => subject.includes(keyword));
 }
 
 /**

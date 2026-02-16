@@ -15,9 +15,10 @@
 | **HTTP Trigger** | HTTP_Trigger |
 | **Logic App** | email2ado-logic-prod |
 | **워크플로우** | Email2ADO-HTTP |
-| **스크립트 버전** | v1.3.0 (발신자 주소 제외 필터 추가) |
+| **스크립트 버전** | v1.4.0 (발신자 주소 + 제목 키워드 제외 필터 추가) |
 | **제외 도메인** | linkedin.com, e.linkedin.com, linkedin.mktgcenter.com |
-| **제외 발신자** | no-reply@appmail.pluralsight.com, MSSecurity-noreply@microsoft.com, pgievent@microsoft.com |
+| **제외 발신자** | no-reply@appmail.pluralsight.com, MSSecurity-noreply@microsoft.com, pgievent@microsoft.com, no-reply@cncf.io, replyto@email.microsoft.com, email@email.microsoft.com, no-reply@linuxfoundation.org |
+| **제외 제목 키워드** | [광고] |
 
 ---
 
@@ -28,7 +29,7 @@
 3. [현재 해결책: Google Apps Script](#3-현재-해결책-google-apps-script)
 4. [Gmail 필터 설정](#4-gmail-필터-설정)
 5. [LinkedIn 도메인 제외 필터 (v1.2.0)](#5-linkedin-도메인-제외-필터-v120)
-6. [발신자 주소 제외 필터 (v1.3.0)](#6-발신자-주소-제외-필터-v130)
+6. [발신자 주소 및 제목 제외 필터 (v1.4.0)](#6-발신자-주소-및-제목-제외-필터-v140)
 7. [필드 매핑 참조](#7-필드-매핑-참조)
 8. [대안 옵션](#8-대안-옵션)
 9. [문제 해결](#9-문제-해결)
@@ -317,11 +318,11 @@ const EXCLUDED_DOMAINS = [
 
 ---
 
-## 6. 발신자 주소 제외 필터 (v1.3.0)
+## 6. 발신자 주소 및 제목 제외 필터 (v1.4.0)
 
-> **적용일**: 2026-02-16 | **스크립트 버전**: v1.3.0
+> **적용일**: 2026-02-16 | **스크립트 버전**: v1.4.0
 
-특정 발신자 주소에서 보내는 자동 알림 메일이 Work Item으로 생성되는 것을 방지하기 위해 발신자 주소 기반 제외 필터가 추가되었습니다.
+특정 발신자 주소에서 보내는 자동 알림 메일과 제목에 특정 키워드가 포함된 메일이 Work Item으로 생성되는 것을 방지하기 위해 발신자 주소 및 제목 키워드 기반 제외 필터가 추가되었습니다.
 
 > 필터 동작 원리, 제외 목록 전체 현황, 변경 절차는 **[EXCLUSION-LIST.md](EXCLUSION-LIST.md)** 를 참조하세요.
 
@@ -332,8 +333,18 @@ const EXCLUDED_DOMAINS = [
 | `no-reply@appmail.pluralsight.com` | Pluralsight 학습 플랫폼 알림 |
 | `MSSecurity-noreply@microsoft.com` | Microsoft Security 자동 알림 |
 | `pgievent@microsoft.com` | Microsoft PGI 이벤트 알림 |
+| `no-reply@cncf.io` | CNCF 뉴스레터/알림 |
+| `replyto@email.microsoft.com` | Microsoft 마케팅/이벤트 메일 |
+| `email@email.microsoft.com` | Microsoft 자동 발송 메일 |
+| `no-reply@linuxfoundation.org` | Linux Foundation 알림 |
 
-### 6.2 동작 원리 (도메인 + 발신자 제외)
+### 6.2 제외 대상 제목 키워드
+
+| 키워드 | 제외 사유 |
+|--------|----------|
+| `[광고]` | 광고성 메일이 Work Item으로 생성됨 |
+
+### 6.3 동작 원리 (도메인 + 발신자 + 제목 제외)
 
 ```
 ┌─────────────┐     ┌───────────────────────────┐     ┌─────────────────────┐
@@ -345,7 +356,8 @@ const EXCLUDED_DOMAINS = [
 │ ✉ LinkedIn  │     │  ❌ → SKIP (도메인 제외)   │     │                     │
 │ ✉ Pluralsight│    │  ❌ → SKIP (발신자 제외)   │     │                     │
 │ ✉ MSSecurity│     │  ❌ → SKIP (발신자 제외)   │     │                     │
-│ ✉ PGI Event │     │  ❌ → SKIP (발신자 제외)   │     │                     │
+│ ✉ CNCF      │     │  ❌ → SKIP (발신자 제외)   │     │                     │
+│ ✉ [광고] 메일│     │  ❌ → SKIP (제목 제외)    │     │                     │
 └─────────────┘     └───────────────────────────┘     └─────────────────────┘
 ```
 
@@ -461,6 +473,7 @@ az webapp auth show --name email2ado-logic-prod --resource-group rg-zb-taskman -
 
 | 날짜 | 버전 | 변경 내용 |
 |------|------|----------|
+| 2026-02-16 | v1.4.0 | 발신자 4건 추가 (cncf, microsoft email, linuxfoundation) + 제목 키워드 제외 필터 추가 ([광고]) |
 | 2026-02-16 | v1.3.0 | 발신자 주소 제외 필터 추가 (pluralsight, MSSecurity, pgievent) |
 | 2026-02-07 | v1.2.0 | LinkedIn 도메인 제외 필터 추가 (linkedin.com 외 2개 도메인) |
 | 2026-01-31 | v2.4.0 | Gmail 자동 연동 완료, E2E 테스트 성공 |

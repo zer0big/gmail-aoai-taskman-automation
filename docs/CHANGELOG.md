@@ -5,6 +5,40 @@
 
 ---
 
+## [2.7.0] - 2026-02-16 (발신자 4건 추가 + 제목 키워드 제외 필터)
+
+### 🎯 목표 달성
+- ✅ 발신자 주소 4건 추가 (cncf, microsoft email, linuxfoundation)
+- ✅ 제목 키워드 기반 제외 필터 신규 구현 ([광고])
+- ✅ 전체 산출물 현행화 완료
+
+### 추가됨 (Added)
+- 2026-02-16: `EXCLUDED_SENDERS` 4개 주소 추가
+  - `no-reply@cncf.io` (CNCF 뉴스레터/알림)
+  - `replyto@email.microsoft.com` (Microsoft 마케팅/이벤트 메일)
+  - `email@email.microsoft.com` (Microsoft 자동 발송 메일)
+  - `no-reply@linuxfoundation.org` (Linux Foundation 알림)
+- 2026-02-16: `EXCLUDED_SUBJECT_KEYWORDS` 상수 신규 추가
+  - `[광고]` — 제목에 해당 문구가 포함된 이메일 제외
+- 2026-02-16: `isExcludedSubject()` 함수 신규 추가
+
+### 변경됨 (Changed)
+- 2026-02-16: `scripts/gmail-trigger.gs` v1.3.0 → v1.4.0
+- 2026-02-16: `README.md` 버전 v2.6.0 → v2.7.0
+- 2026-02-16: `docs/EXCLUSION-LIST.md` 제목 키워드 제외 섹션 추가, 발신자 4건 추가
+- 2026-02-16: `docs/GMAIL-INTEGRATION.md` 운영 구성 테이블, Section 6 확장
+- 2026-02-16: `processNewEmails()` 제목 키워드 체크 로직 추가
+- 2026-02-16: Google Apps Script (`Email2ADO-Trigger`) clasp push로 코드 배포 완료
+
+### 배포 정보
+- **Apps Script 버전**: v1.4.0
+- **배포 방법**: clasp CLI (`clasp push`)
+- **제외 도메인**: linkedin.com, e.linkedin.com, linkedin.mktgcenter.com
+- **제외 발신자**: 7개 주소 (pluralsight, MSSecurity, pgievent, cncf, microsoft email×2, linuxfoundation)
+- **제외 제목 키워드**: [광고]
+
+---
+
 ## [2.6.0] - 2026-02-16 (발신자 주소 제외 필터 + 제외 목록 관리 문서)
 
 ### 🎯 목표 달성
