@@ -5,6 +5,36 @@
 
 ---
 
+## [2.6.0] - 2026-02-16 (발신자 주소 제외 필터 + 제외 목록 관리 문서)
+
+### 🎯 목표 달성
+- ✅ 특정 발신자 주소 기반 이메일 제외 필터 추가
+- ✅ 제외 목록 관리 전용 문서 신규 생성
+- ✅ 전체 산출물 현행화 완료
+
+### 추가됨 (Added)
+- 2026-02-16: `EXCLUDED_SENDERS` 상수 추가 (3개 발신자 주소)
+  - `no-reply@appmail.pluralsight.com` (Pluralsight 학습 알림)
+  - `MSSecurity-noreply@microsoft.com` (Microsoft Security 자동 알림)
+  - `pgievent@microsoft.com` (Microsoft PGI 이벤트 알림)
+- 2026-02-16: `docs/EXCLUSION-LIST.md` 제외 목록 관리 전용 문서 신규 생성
+- 2026-02-16: `isExcludedSender()` 함수에 발신자 주소 정확 매칭 로직 추가
+
+### 변경됨 (Changed)
+- 2026-02-16: `scripts/gmail-trigger.gs` v1.2.0 → v1.3.0
+- 2026-02-16: `README.md` 버전 v2.5.0 → v2.6.0, 문서 읽기 순서에 EXCLUSION-LIST.md 추가
+- 2026-02-16: `docs/GMAIL-INTEGRATION.md` 운영 구성 테이블, 목차, 아키텍처 다이어그램 현행화
+- 2026-02-16: `isExcludedSender()` 로그 메시지 개선 ("제외 도메인" → "제외 발신자")
+- 2026-02-16: Google Apps Script (`Email2ADO-Trigger`) clasp push로 코드 배포 완료
+
+### 배포 정보
+- **Apps Script 버전**: v1.3.0
+- **배포 방법**: clasp CLI (`clasp push`)
+- **제외 도메인**: linkedin.com, e.linkedin.com, linkedin.mktgcenter.com
+- **제외 발신자**: no-reply@appmail.pluralsight.com, MSSecurity-noreply@microsoft.com, pgievent@microsoft.com
+
+---
+
 ## [2.5.0] - 2026-02-07 (문서 현행화 + LinkedIn 제외 필터)
 
 ### 🎯 목표 달성

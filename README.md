@@ -2,7 +2,7 @@
 
 > **한 줄 요약**: Gmail 메일 수신 → AI 분석(GPT-4o) → Azure DevOps Work Item 자동 생성 → Teams 알림
 
-**버전**: v2.5.0 | **최종 업데이트**: 2026-02-07 | **담당자**: 김영대 (your-email@example.com) | **상태**: ✅ 운영 중
+**버전**: v2.6.0 | **최종 업데이트**: 2026-02-16 | **담당자**: 김영대 (your-email@example.com) | **상태**: ✅ 운영 중
 
 ---
 
@@ -14,7 +14,8 @@
 | 2️⃣ | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | 상세 아키텍처 설계 (WAF) | 15분 |
 | 3️⃣ | [docs/DEPLOY.md](docs/DEPLOY.md) | Azure 배포 가이드 | 20분 |
 | 4️⃣ | [docs/GMAIL-INTEGRATION.md](docs/GMAIL-INTEGRATION.md) | **Gmail 자동 연동 (Apps Script)** | 15분 |
-| 5️⃣ | [docs/LOCAL-TESTING.md](docs/LOCAL-TESTING.md) | 로컬 개발 환경 설정 | 10분 |
+| 5️⃣ | [docs/EXCLUSION-LIST.md](docs/EXCLUSION-LIST.md) | **이메일 제외 목록 관리** | 5분 |
+| 6️⃣ | [docs/LOCAL-TESTING.md](docs/LOCAL-TESTING.md) | 로컬 개발 환경 설정 | 10분 |
 | 📌 | [docs/HANDS-ON-GUIDE.md](docs/HANDS-ON-GUIDE.md) | **핸즈온 구축 가이드** | 2~3시간 |
 | 📌 | [docs/HANDS-ON-GUIDE.md](docs/HANDS-ON-GUIDE.md) | **핸즈온 구축 가이드** | 2~3시간 |
 | 📌 | [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | 문제 해결 가이드 | 필요시 |
@@ -63,6 +64,7 @@ Email2ADO/
 │   ├── TROUBLESHOOTING.md          # 문제 해결 가이드
 │   ├── HANDS-ON-GUIDE.md           # 핸즈온 구축 가이드
 │   ├── CHANGELOG.md                # 변경 이력
+│   └── EXCLUSION-LIST.md           # 이메일 제외 목록 관리
 │
 ├── 📁 src/                         # 소스 코드
 │   └── Email2ADO-Workflow/         # Logic App Standard 워크플로우
@@ -283,7 +285,8 @@ func start
 
 | 버전 | 날짜 | 변경 내용 |
 |------|------|----------|
-| **v2.5.0** | 2026-02-07 | LinkedIn 도메인 제외 필터 (v1.2.0), 전체 문서 현행화 |
+| **v2.6.0** | 2026-02-16 | 발신자 주소 제외 필터 (v1.3.0), 제외 목록 관리 문서 추가 |
+| v2.5.0 | 2026-02-07 | LinkedIn 도메인 제외 필터 (v1.2.0), 전체 문서 현행화 |
 | v2.4.0 | 2026-01-31 | Gmail 자동 연동 (Google Apps Script), 문서 현행화 |
 | v2.3.0 | 2026-01-30 | Azure WAF 보안 강화 (Key Vault 런타임, Easy Auth) |
 | v2.2.0 | 2026-01-30 | Phase 8 - V1 커넥터 우회, E2E 테스트 완료 |

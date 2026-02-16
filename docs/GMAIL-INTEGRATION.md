@@ -15,8 +15,9 @@
 | **HTTP Trigger** | HTTP_Trigger |
 | **Logic App** | email2ado-logic-prod |
 | **워크플로우** | Email2ADO-HTTP |
-| **스크립트 버전** | v1.2.0 (LinkedIn 도메인 제외 필터 적용) |
+| **스크립트 버전** | v1.3.0 (발신자 주소 제외 필터 추가) |
 | **제외 도메인** | linkedin.com, e.linkedin.com, linkedin.mktgcenter.com |
+| **제외 발신자** | no-reply@appmail.pluralsight.com, MSSecurity-noreply@microsoft.com, pgievent@microsoft.com |
 
 ---
 
@@ -27,9 +28,10 @@
 3. [현재 해결책: Google Apps Script](#3-현재-해결책-google-apps-script)
 4. [Gmail 필터 설정](#4-gmail-필터-설정)
 5. [LinkedIn 도메인 제외 필터 (v1.2.0)](#5-linkedin-도메인-제외-필터-v120)
-6. [필드 매핑 참조](#6-필드-매핑-참조)
-7. [대안 옵션](#7-대안-옵션)
-8. [문제 해결](#8-문제-해결)
+6. [발신자 주소 제외 필터 (v1.3.0)](#6-발신자-주소-제외-필터-v130)
+7. [필드 매핑 참조](#7-필드-매핑-참조)
+8. [대안 옵션](#8-대안-옵션)
+9. [문제 해결](#9-문제-해결)
 
 ---
 
@@ -315,7 +317,41 @@ const EXCLUDED_DOMAINS = [
 
 ---
 
-## 6. 필드 매핑 참조
+## 6. 발신자 주소 제외 필터 (v1.3.0)
+
+> **적용일**: 2026-02-16 | **스크립트 버전**: v1.3.0
+
+특정 발신자 주소에서 보내는 자동 알림 메일이 Work Item으로 생성되는 것을 방지하기 위해 발신자 주소 기반 제외 필터가 추가되었습니다.
+
+> 필터 동작 원리, 제외 목록 전체 현황, 변경 절차는 **[EXCLUSION-LIST.md](EXCLUSION-LIST.md)** 를 참조하세요.
+
+### 6.1 제외 대상 발신자
+
+| 발신자 주소 | 발송 유형 |
+|------------|----------|
+| `no-reply@appmail.pluralsight.com` | Pluralsight 학습 플랫폼 알림 |
+| `MSSecurity-noreply@microsoft.com` | Microsoft Security 자동 알림 |
+| `pgievent@microsoft.com` | Microsoft PGI 이벤트 알림 |
+
+### 6.2 동작 원리 (도메인 + 발신자 제외)
+
+```
+┌─────────────┐     ┌───────────────────────────┐     ┌─────────────────────┐
+│   Gmail     │     │  Apps Script              │     │  Logic App          │
+│   Inbox     │────▶│  processNewEmails()       │────▶│  Email2ADO-HTTP     │
+│             │     │                           │     │                     │
+│ ✉ Azure 메일│     │  ✅ → sendToLogicApp      │     │  → AI 분석          │
+│ ✉ MVP 메일  │     │  ✅ → sendToLogicApp      │     │  → Work Item 생성   │
+│ ✉ LinkedIn  │     │  ❌ → SKIP (도메인 제외)   │     │                     │
+│ ✉ Pluralsight│    │  ❌ → SKIP (발신자 제외)   │     │                     │
+│ ✉ MSSecurity│     │  ❌ → SKIP (발신자 제외)   │     │                     │
+│ ✉ PGI Event │     │  ❌ → SKIP (발신자 제외)   │     │                     │
+└─────────────┘     └───────────────────────────┘     └─────────────────────┘
+```
+
+---
+
+## 7. 필드 매핑 참조
 
 ### Apps Script → Logic App 페이로드
 
@@ -340,7 +376,7 @@ const EXCLUDED_DOMAINS = [
 
 ---
 
-## 7. 대안 옵션
+## 8. 대안 옵션
 
 ### Option B: Power Automate
 
@@ -363,7 +399,7 @@ Gmail 트리거 → HTTP 액션 (Logic App 호출)
 
 ---
 
-## 8. 문제 해결
+## 9. 문제 해결
 
 ### 8.1 Apps Script 권한 오류
 
@@ -415,6 +451,7 @@ az webapp auth show --name email2ado-logic-prod --resource-group rg-zb-taskman -
 | 문서 | 내용 |
 |------|------|
 | [ARCHITECTURE.md](ARCHITECTURE.md) | 전체 시스템 아키텍처 |
+| [EXCLUSION-LIST.md](EXCLUSION-LIST.md) | 이메일 제외 목록 관리 |
 | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | 전체 문제 해결 가이드 |
 | [DEPLOY.md](DEPLOY.md) | Azure 배포 가이드 |
 
@@ -424,6 +461,7 @@ az webapp auth show --name email2ado-logic-prod --resource-group rg-zb-taskman -
 
 | 날짜 | 버전 | 변경 내용 |
 |------|------|----------|
+| 2026-02-16 | v1.3.0 | 발신자 주소 제외 필터 추가 (pluralsight, MSSecurity, pgievent) |
 | 2026-02-07 | v1.2.0 | LinkedIn 도메인 제외 필터 추가 (linkedin.com 외 2개 도메인) |
 | 2026-01-31 | v2.4.0 | Gmail 자동 연동 완료, E2E 테스트 성공 |
 | 2026-01-31 | - | Easy Auth 비활성화, HTTP_Trigger URL 수정 |
