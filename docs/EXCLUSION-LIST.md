@@ -1,13 +1,13 @@
 # 📧 이메일 제외 목록 관리 가이드
 
-> **상태**: ✅ 운영 중 | **최종 업데이트**: 2026-02-16 | **스크립트 버전**: v1.4.0
+> **상태**: ✅ 운영 중 | **최종 업데이트**: 2026-02-22 | **스크립트 버전**: v1.5.0
 
 ---
 
 ## 📋 개요
 
 Email2ADO 시스템은 Gmail에서 수신한 이메일을 자동으로 Azure DevOps Work Item으로 생성합니다.  
-그러나 모든 이메일이 Work Item으로 생성될 필요는 없으므로, **도메인 기반**, **발신자 주소 기반**, **제목 키워드 기반** 제외 필터를 통해 불필요한 자동 메일을 걸러냅니다.
+그러나 모든 이메일이 Work Item으로 생성될 필요는 없으므로, **도메인 기반**, **발신자 주소 기반**, **제목 키워드 기반** 제외 필터와 **중복 생성 방지** 로직을 통해 불필요한 자동 메일을 걸러냅니다.
 
 ### 필터링 순서
 
@@ -17,9 +17,10 @@ Email2ADO 시스템은 Gmail에서 수신한 이메일을 자동으로 Azure Dev
                                               ┌─────▼─────┐
                                               │ 제외 체크   │
                                               ├────────────┤
-                                              │ 1. 도메인   │ → EXCLUDED_DOMAINS
-                                              │ 2. 발신자   │ → EXCLUDED_SENDERS
-                                              │ 3. 제목     │ → EXCLUDED_SUBJECT_KEYWORDS
+                                              │ 1. 중복    │ → PROCESSED_MESSAGE_IDS
+                                              │ 2. 도메인   │ → EXCLUDED_DOMAINS
+                                              │ 3. 발신자   │ → EXCLUDED_SENDERS
+                                              │ 4. 제목     │ → EXCLUDED_SUBJECT_KEYWORDS
                                               └─────┬──────┘
                                                     │
                                          ┌──────────▼──────────┐
@@ -69,6 +70,8 @@ const EXCLUDED_DOMAINS = [
 | 5 | `replyto@email.microsoft.com` | Microsoft 마케팅/이벤트 메일 | 2026-02-16 | Microsoft 마케팅 메일이 Work Item으로 생성됨 |
 | 6 | `email@email.microsoft.com` | Microsoft 자동 발송 메일 | 2026-02-16 | Microsoft 자동 메일이 Work Item으로 생성됨 |
 | 7 | `no-reply@linuxfoundation.org` | Linux Foundation 알림 | 2026-02-16 | Linux Foundation 알림이 Work Item으로 생성됨 |
+| 8 | `noreply@microsoft.com` | Microsoft Teams 멘션 알림 | 2026-02-22 | Teams 멘션 알림이 Work Item으로 생성됨 |
+| 9 | `m365dev@microsoft.com` | M365 구독 갱신 알림 | 2026-02-22 | M365 구독 갱신 알림이 Work Item으로 생성됨 |
 
 **스크립트 위치**: `scripts/gmail-trigger.gs` → `EXCLUDED_SENDERS` 상수
 
@@ -80,7 +83,9 @@ const EXCLUDED_SENDERS = [
   "no-reply@cncf.io",
   "replyto@email.microsoft.com",
   "email@email.microsoft.com",
-  "no-reply@linuxfoundation.org"
+  "no-reply@linuxfoundation.org",
+  "noreply@microsoft.com",
+  "m365dev@microsoft.com"
 ];
 ```
 
@@ -93,16 +98,39 @@ const EXCLUDED_SENDERS = [
 | # | 키워드 | 제외 사유 | 추가일 |
 |---|--------|----------|--------|
 | 1 | `[광고]` | 광고성 메일이 Work Item으로 생성됨 | 2026-02-16 |
+| 2 | `Your weekly PIM digest` | PIM digest 알림이 Work Item으로 생성됨 (테넌트 ID 노출 보안 이슈) | 2026-02-22 |
+| 3 | `CONGRATULATIONS` | 자동 갱신 알림이 Work Item으로 생성됨 | 2026-02-22 |
 
 **스크립트 위치**: `scripts/gmail-trigger.gs` → `EXCLUDED_SUBJECT_KEYWORDS` 상수
 
 ```javascript
 const EXCLUDED_SUBJECT_KEYWORDS = [
-  "[광고]"
+  "[광고]",
+  "Your weekly PIM digest",
+  "CONGRATULATIONS"
 ];
 ```
 
-> 💡 **비교 방식**: `String.includes()` — 제목 문자열에 키워드가 포함되면 제외됩니다. 대소문자를 구분합니다.
+> 💡 **비교 방식**: `String.includes()` (대소문자 무시) — 제목 문자열에 키워드가 포함되면 제외됩니다.
+
+### 4. 중복 생성 방지 (`PROCESSED_MESSAGE_IDS`)
+
+동일한 이메일이 여러 번 처리되어 **중복 Work Item**이 생성되는 것을 방지합니다.
+
+| 항목 | 값 |
+|------|-----|
+| **저장 위치** | Script Properties → `PROCESSED_MESSAGE_IDS` |
+| **저장 형식** | JSON 배열 `[{id: "messageId", ts: timestamp}, ...]` |
+| **보관 기간** | 7일 (자동 정리) |
+| **체크 시점** | 제외 필터 이전 (최우선 체크) |
+
+**동작 원리**:
+1. 이메일 처리 전 Gmail 메시지 ID가 이미 기록되어 있는지 확인
+2. 기록되어 있으면 `⏭️ 중복 메시지 건너뛰기` 로그 후 스킵
+3. 처리 성공 시 메시지 ID를 타임스탬프와 함께 기록
+4. 7일 이상 지난 기록은 자동 삭제 (Script Properties 용량 관리)
+
+**관련 함수**: `isAlreadyProcessed()`, `markAsProcessed()`, `getProcessedIds()`, `saveProcessedIds()`
 
 ---
 
@@ -134,6 +162,8 @@ const EXCLUDED_SENDERS = [
   "replyto@email.microsoft.com",
   "email@email.microsoft.com",
   "no-reply@linuxfoundation.org",
+  "noreply@microsoft.com",
+  "m365dev@microsoft.com",
   "noreply@example.com"       // ← 새 발신자 추가
 ];
 ```
@@ -145,6 +175,8 @@ const EXCLUDED_SENDERS = [
 ```javascript
 const EXCLUDED_SUBJECT_KEYWORDS = [
   "[광고]",
+  "Your weekly PIM digest",
+  "CONGRATULATIONS",
   "[AD]"                      // ← 새 키워드 추가
 ];
 ```
@@ -222,6 +254,7 @@ clasp push
 
 | 날짜 | 버전 | 변경 내용 |
 |------|------|----------|
+| 2026-02-22 | v1.5.0 | EXCLUDED_SENDERS 2개 주소 추가 (noreply, m365dev), EXCLUDED_SUBJECT_KEYWORDS 2개 추가 (PIM digest, CONGRATULATIONS), 중복 생성 방지 로직, 제목 대소문자 무시 비교 |
 | 2026-02-16 | v1.4.0 | EXCLUDED_SENDERS 4개 주소 추가 (cncf, microsoft email, linuxfoundation), EXCLUDED_SUBJECT_KEYWORDS 추가 ([광고]) |
 | 2026-02-16 | v1.3.0 | EXCLUSION-LIST.md 신규 생성, EXCLUDED_SENDERS 3개 주소 추가 |
 | 2026-02-07 | v1.2.0 | EXCLUDED_DOMAINS 3개 도메인 추가 (linkedin.com 외) |

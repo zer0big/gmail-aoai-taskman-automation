@@ -4,9 +4,9 @@
  * ============================================================================
  * 
  * 목적: Gmail에서 새 이메일 수신 시 Email2ADO-HTTP Logic App 워크플로우 호출
- * 버전: 1.4.0
- * 수정일: 2026-02-16
- * 변경: 발신자 4건 추가 (cncf, microsoft email, linuxfoundation) + 제목 키워드 제외 필터 추가
+ * 버전: 1.5.0
+ * 수정일: 2026-02-22
+ * 변경: PIM digest/CONGRATULATIONS 제목 필터 + 발신자 2건 추가 + 중복 생성 방지 로직
  * 작성일: 2026-01-31
  * 
  * 📚 초기 설정 방법:
@@ -62,7 +62,9 @@ const EXCLUDED_SENDERS = [
   "no-reply@cncf.io",
   "replyto@email.microsoft.com",
   "email@email.microsoft.com",
-  "no-reply@linuxfoundation.org"
+  "no-reply@linuxfoundation.org",
+  "noreply@microsoft.com",
+  "m365dev@microsoft.com"
 ];
 
 /**
@@ -70,8 +72,20 @@ const EXCLUDED_SENDERS = [
  * 제목에 이 키워드가 포함된 이메일은 처리하지 않고 건너뜀
  */
 const EXCLUDED_SUBJECT_KEYWORDS = [
-  "[광고]"
+  "[광고]",
+  "Your weekly PIM digest",
+  "CONGRATULATIONS"
 ];
+
+/**
+ * 중복 처리 방지를 위한 Script Properties 키
+ */
+const PROCESSED_IDS_KEY = 'PROCESSED_MESSAGE_IDS';
+
+/**
+ * 중복 처리 방지를 위한 최대 보관 기간 (밀리초, 7일)
+ */
+const DEDUP_RETENTION_MS = 7 * 24 * 60 * 60 * 1000;
 
 /**
  * Webhook URL을 Script Properties에서 가져옴
@@ -183,6 +197,13 @@ function processNewEmails() {
         // 이미 읽은 메시지는 건너뛰기 (선택적)
         // if (message.isRead()) continue;
         
+        // 중복 처리 방지 체크
+        const msgId = message.getId();
+        if (isAlreadyProcessed(msgId)) {
+          Logger.log('⏭️ 중복 메시지 건너뛰기: ' + message.getSubject() + ' (id: ' + msgId + ')');
+          continue;
+        }
+        
         // 제외 발신자 필터링 (도메인 + 주소)
         const sender = message.getFrom();
         if (isExcludedSender(sender)) {
@@ -202,6 +223,7 @@ function processNewEmails() {
           if (result.success) {
             Logger.log(`✅ 처리 성공: ${message.getSubject()}`);
             message.markRead();
+            markAsProcessed(message.getId());
           } else {
             Logger.log(`❌ 처리 실패: ${message.getSubject()} - ${result.error}`);
           }
@@ -251,7 +273,60 @@ function isExcludedSender(from) {
  */
 function isExcludedSubject(subject) {
   if (!subject) return false;
-  return EXCLUDED_SUBJECT_KEYWORDS.some(keyword => subject.includes(keyword));
+  const subjectLower = subject.toLowerCase();
+  return EXCLUDED_SUBJECT_KEYWORDS.some(keyword => subjectLower.includes(keyword.toLowerCase()));
+}
+
+// ============================================================================
+// 🔄 중복 방지
+// ============================================================================
+
+/**
+ * 이미 처리된 메시지인지 확인
+ * @param {string} messageId - Gmail 메시지 ID
+ * @returns {boolean} 이미 처리된 경우 true
+ */
+function isAlreadyProcessed(messageId) {
+  const processed = getProcessedIds();
+  return processed.some(entry => entry.id === messageId);
+}
+
+/**
+ * 처리된 메시지 ID 기록
+ * @param {string} messageId - Gmail 메시지 ID
+ */
+function markAsProcessed(messageId) {
+  const processed = getProcessedIds();
+  processed.push({ id: messageId, ts: Date.now() });
+  saveProcessedIds(processed);
+}
+
+/**
+ * 처리된 메시지 ID 목록 가져오기 (만료된 항목 자동 정리)
+ * @returns {Array<{id: string, ts: number}>}
+ */
+function getProcessedIds() {
+  const props = PropertiesService.getScriptProperties();
+  const raw = props.getProperty(PROCESSED_IDS_KEY);
+  if (!raw) return [];
+  
+  try {
+    const entries = JSON.parse(raw);
+    const cutoff = Date.now() - DEDUP_RETENTION_MS;
+    return entries.filter(e => e.ts > cutoff);
+  } catch (e) {
+    Logger.log('⚠️ 처리 ID 파싱 오류, 초기화: ' + e.message);
+    return [];
+  }
+}
+
+/**
+ * 처리된 메시지 ID 목록 저장
+ * @param {Array<{id: string, ts: number}>} entries
+ */
+function saveProcessedIds(entries) {
+  const props = PropertiesService.getScriptProperties();
+  props.setProperty(PROCESSED_IDS_KEY, JSON.stringify(entries));
 }
 
 /**

@@ -15,10 +15,11 @@
 | **HTTP Trigger** | HTTP_Trigger |
 | **Logic App** | email2ado-logic-prod |
 | **워크플로우** | Email2ADO-HTTP |
-| **스크립트 버전** | v1.4.0 (발신자 주소 + 제목 키워드 제외 필터 추가) |
+| **스크립트 버전** | v1.5.0 (발신자 + 제목 필터 확장 + 중복 생성 방지) |
 | **제외 도메인** | linkedin.com, e.linkedin.com, linkedin.mktgcenter.com |
-| **제외 발신자** | no-reply@appmail.pluralsight.com, MSSecurity-noreply@microsoft.com, pgievent@microsoft.com, no-reply@cncf.io, replyto@email.microsoft.com, email@email.microsoft.com, no-reply@linuxfoundation.org |
-| **제외 제목 키워드** | [광고] |
+| **제외 발신자** | no-reply@appmail.pluralsight.com, MSSecurity-noreply@microsoft.com, pgievent@microsoft.com, no-reply@cncf.io, replyto@email.microsoft.com, email@email.microsoft.com, no-reply@linuxfoundation.org, noreply@microsoft.com, m365dev@microsoft.com |
+| **제외 제목 키워드** | [광고], Your weekly PIM digest, CONGRATULATIONS |
+| **중복 방지** | Gmail 메시지 ID 기반 (7일 보관) |
 
 ---
 
@@ -318,9 +319,9 @@ const EXCLUDED_DOMAINS = [
 
 ---
 
-## 6. 발신자 주소 및 제목 제외 필터 (v1.4.0)
+## 6. 발신자 주소 및 제목 제외 필터 (v1.5.0)
 
-> **적용일**: 2026-02-16 | **스크립트 버전**: v1.4.0
+> **적용일**: 2026-02-22 | **스크립트 버전**: v1.5.0
 
 특정 발신자 주소에서 보내는 자동 알림 메일과 제목에 특정 키워드가 포함된 메일이 Work Item으로 생성되는 것을 방지하기 위해 발신자 주소 및 제목 키워드 기반 제외 필터가 추가되었습니다.
 
@@ -337,14 +338,18 @@ const EXCLUDED_DOMAINS = [
 | `replyto@email.microsoft.com` | Microsoft 마케팅/이벤트 메일 |
 | `email@email.microsoft.com` | Microsoft 자동 발송 메일 |
 | `no-reply@linuxfoundation.org` | Linux Foundation 알림 |
+| `noreply@microsoft.com` | Microsoft Teams 멘션 알림 |
+| `m365dev@microsoft.com` | M365 구독 갱신 알림 |
 
 ### 6.2 제외 대상 제목 키워드
 
 | 키워드 | 제외 사유 |
 |--------|----------|
 | `[광고]` | 광고성 메일이 Work Item으로 생성됨 |
+| `Your weekly PIM digest` | PIM digest 알림이 Work Item으로 생성됨 (테넌트 ID 보안 이슈) |
+| `CONGRATULATIONS` | 자동 갱신 알림이 Work Item으로 생성됨 |
 
-### 6.3 동작 원리 (도메인 + 발신자 + 제목 제외)
+### 6.3 동작 원리 (중복 방지 + 도메인 + 발신자 + 제목 제외)
 
 ```
 ┌─────────────┐     ┌───────────────────────────┐     ┌─────────────────────┐
@@ -353,11 +358,10 @@ const EXCLUDED_DOMAINS = [
 │             │     │                           │     │                     │
 │ ✉ Azure 메일│     │  ✅ → sendToLogicApp      │     │  → AI 분석          │
 │ ✉ MVP 메일  │     │  ✅ → sendToLogicApp      │     │  → Work Item 생성   │
+│ ✉ 중복 메일 │     │  ❌ → SKIP (중복 방지)   │     │                     │
 │ ✉ LinkedIn  │     │  ❌ → SKIP (도메인 제외)   │     │                     │
-│ ✉ Pluralsight│    │  ❌ → SKIP (발신자 제외)   │     │                     │
-│ ✉ MSSecurity│     │  ❌ → SKIP (발신자 제외)   │     │                     │
-│ ✉ CNCF      │     │  ❌ → SKIP (발신자 제외)   │     │                     │
-│ ✉ [광고] 메일│     │  ❌ → SKIP (제목 제외)    │     │                     │
+│ ✉ Teams멘션 │     │  ❌ → SKIP (발신자 제외)   │     │                     │
+│ ✉ PIM digest│     │  ❌ → SKIP (제목 제외)    │     │                     │
 └─────────────┘     └───────────────────────────┘     └─────────────────────┘
 ```
 
@@ -473,6 +477,7 @@ az webapp auth show --name email2ado-logic-prod --resource-group rg-zb-taskman -
 
 | 날짜 | 버전 | 변경 내용 |
 |------|------|----------|
+| 2026-02-22 | v1.5.0 | 발신자 2건 추가 (noreply, m365dev) + 제목 키워드 2건 추가 (PIM digest, CONGRATULATIONS) + 중복 생성 방지 + 제목 대소문자 무시 |
 | 2026-02-16 | v1.4.0 | 발신자 4건 추가 (cncf, microsoft email, linuxfoundation) + 제목 키워드 제외 필터 추가 ([광고]) |
 | 2026-02-16 | v1.3.0 | 발신자 주소 제외 필터 추가 (pluralsight, MSSecurity, pgievent) |
 | 2026-02-07 | v1.2.0 | LinkedIn 도메인 제외 필터 추가 (linkedin.com 외 2개 도메인) |

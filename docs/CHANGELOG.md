@@ -5,6 +5,47 @@
 
 ---
 
+## [2.8.0] - 2026-02-22 (PIM digest + 중복 방지 + 필터 확장)
+
+### 🎯 목표 달성
+- ✅ PIM digest 제목 키워드 필터 추가 (테넌트 ID 보안 이슈 해결)
+- ✅ CONGRATULATIONS 제목 키워드 필터 추가
+- ✅ 발신자 2건 추가 (noreply@microsoft.com, m365dev@microsoft.com)
+- ✅ 중복 Work Item 생성 방지 로직 구현
+- ✅ 제목 키워드 대소문자 무시 비교로 개선
+- ✅ 전체 산출물 현행화 완료
+
+### 추가됨 (Added)
+- 2026-02-22: `EXCLUDED_SENDERS` 2개 주소 추가
+  - `noreply@microsoft.com` (Microsoft Teams 멘션 알림)
+  - `m365dev@microsoft.com` (M365 구독 갱신 알림)
+- 2026-02-22: `EXCLUDED_SUBJECT_KEYWORDS` 2개 키워드 추가
+  - `Your weekly PIM digest` — PIM digest 알림 제외 (테넌트 ID 노출 방지)
+  - `CONGRATULATIONS` — 자동 갱신 알림 제외
+- 2026-02-22: 중복 생성 방지 로직 신규 구현
+  - `PROCESSED_MESSAGE_IDS` — Script Properties 기반 메시지 ID 추적
+  - `isAlreadyProcessed()`, `markAsProcessed()` 함수 추가
+  - 7일 보관 후 자동 정리
+
+### 변경됨 (Changed)
+- 2026-02-22: `scripts/gmail-trigger.gs` v1.4.0 → v1.5.0
+- 2026-02-22: `README.md` 버전 v2.7.0 → v2.8.0
+- 2026-02-22: `docs/EXCLUSION-LIST.md` 발신자 2건, 제목 키워드 2건 추가, 중복 방지 섹션 추가
+- 2026-02-22: `docs/GMAIL-INTEGRATION.md` 운영 구성 테이블, Section 6 확장
+- 2026-02-22: `isExcludedSubject()` 대소문자 무시 비교로 개선
+- 2026-02-22: `processNewEmails()` 중복 체크 로직 추가
+- 2026-02-22: Google Apps Script (`Email2ADO-Trigger`) clasp push로 코드 배포 완료
+
+### 배포 정보
+- **Apps Script 버전**: v1.5.0
+- **배포 방법**: clasp CLI (`clasp push`)
+- **제외 도메인**: linkedin.com, e.linkedin.com, linkedin.mktgcenter.com
+- **제외 발신자**: 9개 주소
+- **제외 제목 키워드**: [광고], Your weekly PIM digest, CONGRATULATIONS
+- **중복 방지**: Gmail 메시지 ID 기반 (7일 보관)
+
+---
+
 ## [2.7.0] - 2026-02-16 (발신자 4건 추가 + 제목 키워드 제외 필터)
 
 ### 🎯 목표 달성
